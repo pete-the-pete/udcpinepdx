@@ -9,6 +9,11 @@ a backend API, a web dashboard, and the shared schemas that keep them all
 honest. The physical door build (materials, cutting, fitment) is tracked as
 documentation under [`plans/hardware/`](plans/hardware/).
 
+> **Personal learning project.** No support, no warranty, no SLA. If you
+> find this useful, great — but assume nothing here is production-ready,
+> and do not trust it to not set your pizza on fire. See `LICENSE` and
+> `SECURITY.md`.
+
 ## Status
 
 **Bootstrap.** The repo exists, conventions are set, no code has been written

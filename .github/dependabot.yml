@@ -1,0 +1,49 @@
+# Dependabot config for udcpinepdx.
+# See https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Ecosystems are added as each subsystem lands its bootstrap plan. Do not
+# add an entry here until there is an actual manifest file for that
+# ecosystem in the tree — Dependabot warns loudly on missing directories.
+
+version: 2
+updates:
+  # GitHub Actions workflows (covers any .github/workflows/*.yml we add).
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "sub:ops"
+      - "type:chore"
+
+  # Python firmware on the Pi.
+  # TODO(plans/firmware/): uncomment once firmware/ has a requirements.txt,
+  # pyproject.toml, or uv.lock.
+  # - package-ecosystem: "pip"
+  #   directory: "/firmware"
+  #   schedule:
+  #     interval: "weekly"
+  #   commit-message:
+  #     prefix: "chore(deps)"
+  #     include: "scope"
+  #   labels:
+  #     - "sub:firmware"
+  #     - "type:chore"
+
+  # TypeScript workspace root.
+  # TODO(plans/shared/): once the package manager is chosen (npm/pnpm/bun)
+  # and a lockfile lands at repo root, replace "npm" below with the right
+  # ecosystem name and uncomment.
+  # - package-ecosystem: "npm"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #   commit-message:
+  #     prefix: "chore(deps)"
+  #     include: "scope"
+  #   labels:
+  #     - "sub:shared"
+  #     - "type:chore"

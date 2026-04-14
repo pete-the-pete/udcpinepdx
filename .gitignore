@@ -25,6 +25,10 @@ venv/
 .env.*
 !.env.example
 secrets/
+*.pem
+*.key
+*.p12
+*.pfx
 
 # ---- OS ----
 .DS_Store
