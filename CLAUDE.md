@@ -1,15 +1,11 @@
 # CLAUDE.md — udcpinepdx project instructions
 
-This file is loaded into every Claude Code session run inside this repository.
-It is the contract for how work happens here. Keep it terse — push long-form
-context into per-subsystem `CLAUDE.md` files as those directories get created.
-
 ## Project summary
 
 Software for a custom, instrumented, insulated door on a wood-fired chiminea
-pizza oven. A Raspberry Pi drives a local display + thermocouple + (stretch)
-camera, uploads session data to a TypeScript backend, and a web dashboard
-shows live and historical sessions.
+pizza oven. A Raspberry Pi drives a local display + thermocouple +
+camera, uploads session data and displays a web dashboard
+that shows live and historical sessions.
 
 ## Plans convention
 
