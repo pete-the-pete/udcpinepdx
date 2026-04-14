@@ -1,0 +1,48 @@
+# ---- Node / TypeScript ----
+node_modules/
+dist/
+build/
+.next/
+out/
+.turbo/
+.pnpm-store/
+coverage/
+*.tsbuildinfo
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- Env & secrets ----
+.env
+.env.*
+!.env.example
+secrets/
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Logs ----
+*.log
+logs/
+
+# ---- Editors ----
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# ---- Raspberry Pi / hardware ----
+*.img
+*.iso
+
+# ---- Claude Code local settings (keep shared settings.json, ignore local overrides) ----
+.claude/settings.local.json
