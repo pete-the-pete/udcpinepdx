@@ -60,6 +60,21 @@ re-doing work, so they are committed here.
    binding constraint — *not* the 12 slow credits. Slow credits stay
    reserved for non-Character experiments (FX overlay tests, prompt
    tuning, reference images).
+5. **CSS may animate the sheet as a rigid whole; it may not animate any
+   sub-region.** A state's spritesheet may carry an optional
+   `css_animation` name in the manifest. The engine wraps the sheet in
+   a container that runs that CSS keyframe animation, which can apply
+   `transform` (rotate, translate, scale), `opacity`, and `filter` to
+   the entire sheet uniformly. It must not target any portion of the
+   image — no clip-paths, no masks, no per-pixel effects. The bright
+   line: if the effect can be expressed as one CSS rule applied to the
+   whole `<img>`, it qualifies; if it needs to know where the chef's
+   shoulders or hands are, it doesn't. This buys two things: (a) some
+   states (notably `frozen`) collapse to a single AI frame plus a CSS
+   loop, saving Ideogram credits; (b) motion that's awkward to bake
+   (smooth shiver, gentle sway) becomes smooth interpolation rather
+   than discrete frames. The cost is one new manifest field and a small
+   catalogue of named keyframe animations on the engine side.
 
 ## The sprite contract
 
@@ -81,14 +96,22 @@ plan.
   {
     "frame_size": [512, 512],
     "states": {
-      "frozen":   { "frames": 2, "fps": 4,  "temp_c": [null, 121] },
-      "thawing":  { "frames": 3, "fps": 6,  "temp_c": [121, 177] },
-      "active":   { "frames": 5, "fps": 8,  "temp_c": [177, 232] },
-      "hot":      { "frames": 6, "fps": 10, "temp_c": [232, 288] },
-      "very_hot": { "frames": 8, "fps": 12, "temp_c": [288, null] }
+      "frozen":   { "frames": 1, "fps": null, "css_animation": "shiver", "temp_c": [null, 121] },
+      "thawing":  { "frames": 3, "fps": 6,    "temp_c": [121, 177] },
+      "active":   { "frames": 5, "fps": 8,    "temp_c": [177, 232] },
+      "hot":      { "frames": 6, "fps": 10,   "temp_c": [232, 288] },
+      "very_hot": { "frames": 8, "fps": 12,   "temp_c": [288, null] }
     }
   }
   ```
+
+  `css_animation` is optional. When present, it names a CSS keyframe
+  animation the engine applies to the sheet container per Decision #5.
+  When `frames === 1`, `fps` is ignored (no frame cycling); the engine
+  shows the single frame and lets CSS drive any motion. The catalogue
+  of valid `css_animation` names is owned by the engine plan, not this
+  one — this plan only declares which states want one and what motion
+  it should convey (e.g., `frozen` wants "shiver").
 
   The originally specified °F values (200/300/400/500) were band
   *centers* — "Frozen ~200°F", etc. The manifest values are the °C
@@ -109,14 +132,15 @@ durations from the manifest:
 
 | State | Frames | FPS | Loop duration |
 |---|---|---|---|
-| frozen | 2 | 4 | 0.5s |
+| frozen | 1 | — | CSS-driven (shiver) |
 | thawing | 3 | 6 | 0.5s |
 | active | 5 | 8 | 0.6s |
 | hot | 6 | 10 | 0.6s |
 | very_hot | 8 | 12 | 0.7s |
 
 A 20-minute thaw plays the thawing sheet's 0.5s loop ~2,400 times. The
-chef is "in a thawing mood" the whole time.
+chef is "in a thawing mood" the whole time. `frozen` is a single static
+frame whose motion is supplied entirely by the CSS `shiver` keyframe.
 
 ## Per-state prompt recipes
 
@@ -141,13 +165,17 @@ FX: [STATE_FX]
 Every state's frames must form a clean loop where frame N → frame 1 is
 visually continuous.
 
-**frozen — 2 frames. Shiver cycle.**
+**frozen — 1 frame + CSS `shiver`.**
 
-- Frame 1: body tilted slightly left, jaw clenched, narrowed eyes.
-- Frame 2: body tilted slightly right, same clench.
+- Frame 1: neutral upright pose, jaw clenched, narrowed eyes,
+  shoulders square to camera (no tilt — the lean comes from CSS).
 - Wardrobe: chef whites locked, frosted.
 - FX: encased in pale ice block; frost on hat brim; visible breath puff.
-  Constant across both frames.
+- Motion: the engine applies the `shiver` CSS keyframe, which rotates
+  the entire sheet a few degrees side-to-side on a fast loop. Per
+  Decision #5, the rotation must affect the whole `<img>` uniformly
+  (ice block included — it shivers with him, which reads fine because
+  the block is part of the baked frame).
 
 **thawing — 3 frames. Shake-off-ice cycle.**
 
@@ -256,8 +284,10 @@ slow credits. Slow credits stay reserved for non-Character experiments.
 - **Session 2 (~8 gens). Deepen `active` to 5 frames.** This is the most
   visible state during a real cook — biggest user-visible win.
 - **Session 3 (~9 gens). Deepen `hot` to 6 frames.** Second most common.
-- **Session 4 (~8 gens). Deepen `frozen` to 2 and `thawing` to 3.** Cheap
-  states, batched together.
+- **Session 4 (~5 gens). Deepen `thawing` to 3 frames.** `frozen`'s
+  target is 1 frame under Decision #5 (CSS `shiver` supplies the
+  motion), so this session covers thawing only. If Session 1's frozen
+  frame fails a quality gate, re-roll it here too.
 - **Session 5 (~12 gens). Tackle `very_hot` 8 frames.** Highest risk
   (mask-released wardrobe + fire FX + panting). Last on purpose.
 
@@ -305,7 +335,8 @@ A frame ships only if all four pass:
   state's sheet hits its target frame count, all four quality gates
   pass, manifest is updated.
 - **Plan fully done:** all five sheets at their target frame counts
-  (2/3/5/6/8), all gates green.
+  (1/3/5/6/8), all gates green. `frozen`'s target is 1 frame because
+  motion is CSS-driven (Decision #5).
 
 There is no in-progress plan state that breaks anything downstream.
 
