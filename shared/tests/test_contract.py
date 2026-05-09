@@ -1,4 +1,5 @@
 """Contract tests: Pydantic accepts every valid fixture and rejects every invalid one."""
+
 from __future__ import annotations
 
 import json
@@ -19,10 +20,7 @@ MODELS = {
 
 def _load(type_lower: str, kind: str) -> list[tuple[str, dict]]:
     folder = FIXTURES / type_lower / kind
-    return [
-        (f.name, json.loads(f.read_text()))
-        for f in sorted(folder.glob("*.json"))
-    ]
+    return [(f.name, json.loads(f.read_text())) for f in sorted(folder.glob("*.json"))]
 
 
 @pytest.mark.parametrize(
