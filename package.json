@@ -1,0 +1,9 @@
+{
+  "name": "udcpinepdx",
+  "private": true,
+  "workspaces": ["shared"],
+  "scripts": {
+    "lint": "bun run --filter '*' lint",
+    "test": "bun run --filter '*' test"
+  }
+}

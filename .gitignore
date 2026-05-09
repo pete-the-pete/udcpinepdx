@@ -8,6 +8,8 @@ out/
 .pnpm-store/
 coverage/
 *.tsbuildinfo
+.bun/
+bun-debug.log*
 
 # ---- Python ----
 __pycache__/
