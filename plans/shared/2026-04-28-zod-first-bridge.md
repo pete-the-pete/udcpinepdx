@@ -1052,10 +1052,15 @@ git commit -m "docs(shared): README explaining the bridge"
 
 This way you can commit broken code mid-thought, but the repo guarantees nothing broken reaches `origin`.
 
-- [ ] **Step 1: Install pre-commit**
+- [ ] **Step 1: Install pre-commit (pinned)**
 
-Run: `uv tool install pre-commit`
-Expected: `pre-commit` is now on PATH. Verify: `pre-commit --version`.
+Run: `uv tool install 'pre-commit==4.0.1'`
+
+Why pinned: matches the rest of the plan's "pin everything" discipline. Use whatever stable version is current at execution time; pin the exact version in the command so re-running the bootstrap is deterministic. Upgrade later via `uv tool upgrade pre-commit` and update this line.
+
+Why `uv tool install` (not `uv add`): `uv tool install` puts pre-commit on PATH globally via uv's shim dir, like `pipx install`. `uv add` would install into `shared/.venv` only, where git hooks can't find it. Pre-commit is repo-wide tooling, not a `shared/` dependency.
+
+Expected: `pre-commit` is on PATH. Verify: `pre-commit --version` prints `4.0.1` (or whatever you pinned).
 
 - [ ] **Step 2: Write `.pre-commit-config.yaml`**
 
