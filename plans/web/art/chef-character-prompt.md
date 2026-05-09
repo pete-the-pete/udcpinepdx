@@ -32,10 +32,10 @@ screencapture temp file that has since rolled out of `/var/folders/`.)
 
 - Registered via Ideogram's Characters feature (free tier, ~25
   character-consistent generations per day).
-- Character name as registered in Ideogram: **TBD** — fill in once
-  confirmed; the spritesheet plan's prompt template references this
-  name as `[Pizza Chef Hero]`, adjust if the actual registered name
-  differs.
+- Character name as registered in Ideogram: **Chiminea Chuck**. Use
+  this name in any prompt that references the registered character;
+  the spritesheet plan's prompt template uses the placeholder
+  `[Pizza Chef Hero]`, substitute `Chiminea Chuck`.
 - Character mask defaults at registration: locked face, hair, and
   beard. The `very_hot` state recipe explicitly *releases* the
   wardrobe portion of the mask to allow shirt-off rendering.
