@@ -1,4 +1,13 @@
-// Placeholder. Replaced in issue #10 (Tasks 3+4) by the canary Firing
-// Zod schema and the ALL_SCHEMAS registry. Exists so tsc and oxlint have
-// something to type-check against in the bootstrap PR.
-export {};
+import { FiringSchema } from "./firing.ts";
+
+export { FiringSchema };
+export type { Firing } from "./firing.ts";
+
+/**
+ * Registry of every top-level schema. The codegen walks this object;
+ * every entry becomes a $defs entry in generated/schemas/all.json,
+ * and a Pydantic class in generated/pydantic/__init__.py.
+ */
+export const ALL_SCHEMAS = {
+  Firing: FiringSchema,
+} as const;
