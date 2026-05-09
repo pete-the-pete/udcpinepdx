@@ -1,0 +1,35 @@
+SHARED_DIR := shared
+
+.PHONY: shared-codegen-ts shared-codegen-py shared-codegen shared-test-ts shared-test-py shared-test shared-lint
+
+shared-codegen-ts:
+	cd $(SHARED_DIR) && bun run codegen.ts
+
+shared-codegen-py: shared-codegen-ts
+	cd $(SHARED_DIR) && uv run datamodel-codegen \
+	  --input generated/schemas/all.json \
+	  --input-file-type jsonschema \
+	  --output generated/pydantic/__init__.py \
+	  --output-model-type pydantic_v2.BaseModel \
+	  --use-double-quotes \
+	  --target-python-version 3.11 \
+	  --use-schema-description \
+	  --enum-field-as-literal all \
+	  --disable-timestamp
+	@# Re-add the "do not edit" banner that datamodel-codegen overwrites.
+	@printf '# Generated package — do not edit. Regenerate with `make codegen`.\n%s\n' "$$(cat $(SHARED_DIR)/generated/pydantic/__init__.py)" > $(SHARED_DIR)/generated/pydantic/__init__.py.tmp
+	@mv $(SHARED_DIR)/generated/pydantic/__init__.py.tmp $(SHARED_DIR)/generated/pydantic/__init__.py
+
+shared-codegen: shared-codegen-py
+
+shared-test-ts:
+	cd $(SHARED_DIR) && bun test tests
+
+shared-test-py:
+	cd $(SHARED_DIR) && uv run pytest
+
+shared-test: shared-test-ts shared-test-py
+
+shared-lint:
+	cd $(SHARED_DIR) && bun run lint
+	cd $(SHARED_DIR) && uv run ruff check .
