@@ -1,0 +1,41 @@
+repos:
+  # Fast, runs on every commit
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: oxlint
+        name: oxlint (shared/)
+        entry: bash -c 'cd shared && bun run --silent oxlint .'
+        language: system
+        types_or: [ts, tsx, javascript]
+        pass_filenames: false
+
+      - id: tsc-shared
+        name: tsc --noEmit (shared/)
+        entry: bash -c 'cd shared && bun x tsc --noEmit'
+        language: system
+        types_or: [ts, tsx]
+        pass_filenames: false
+
+  # Slow, runs only on push
+  - repo: local
+    hooks:
+      - id: codegen-up-to-date
+        name: shared codegen up-to-date
+        entry: bash -c 'make codegen && git diff --exit-code -- shared/generated'
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+
+      - id: tests
+        name: shared tests
+        entry: make test
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
