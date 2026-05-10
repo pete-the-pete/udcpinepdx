@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from flask import Flask, Response
 
-from .mock_state import current_firing
+from .mock_state import current_state
 
 
 def create_app() -> Flask:
@@ -16,9 +16,9 @@ def create_app() -> Flask:
 
     @app.get("/api/state")
     def get_state() -> Response:
-        firing = current_firing()
+        state = current_state()
         # Pydantic's model_dump_json gives us a canonical wire representation
         # that the Zod schema on the frontend will accept verbatim.
-        return Response(firing.model_dump_json(), mimetype="application/json")
+        return Response(state.model_dump_json(), mimetype="application/json")
 
     return app
