@@ -13,30 +13,25 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from generated.pydantic import LiveState
+from generated.pydantic import Firing, LiveState, Pizza, Sample
 
 
 def current_state() -> LiveState:
     now = datetime.now(timezone.utc)
     pizza_started = now - timedelta(seconds=102)
-    return LiveState.model_validate(
-        {
-            "firing": {
-                "id": 42,
-                "started_at": "2026-04-28T18:24:00-07:00",
-                "ended_at": None,
-                "status": "active",
-            },
-            "latest_sample": {
-                "t": now.isoformat(),
-                "temp_f": 847.0,
-            },
-            "active_pizza": {
-                "id": 3,
-                "seq": 3,
-                "name": "Margherita",
-                "started_at": pizza_started.isoformat(),
-                "target_seconds": 150,
-            },
-        }
+    return LiveState(
+        firing=Firing(
+            id=42,
+            started_at="2026-04-28T18:24:00-07:00",
+            ended_at=None,
+            status="active",
+        ),
+        latest_sample=Sample(t=now, temp_f=847.0),
+        active_pizza=Pizza(
+            id=3,
+            seq=3,
+            name="Margherita",
+            started_at=pizza_started,
+            target_seconds=150,
+        ),
     )

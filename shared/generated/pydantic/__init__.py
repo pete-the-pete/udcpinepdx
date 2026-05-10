@@ -51,29 +51,10 @@ class Pizza(BaseModel):
     target_seconds: PositiveInt
 
 
-class LatestSample(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    t: AwareDatetime
-    temp_f: float
-
-
-class ActivePizza(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    id: conint(ge=0)
-    seq: PositiveInt
-    name: constr(min_length=1)
-    started_at: AwareDatetime
-    target_seconds: PositiveInt
-
-
 class LiveState(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     firing: Firing
-    latest_sample: LatestSample | None
-    active_pizza: ActivePizza | None
+    latest_sample: Sample | None
+    active_pizza: Pizza | None
