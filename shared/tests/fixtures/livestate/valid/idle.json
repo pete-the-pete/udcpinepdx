@@ -1,0 +1,10 @@
+{
+  "firing": {
+    "id": 42,
+    "started_at": "2026-04-28T18:24:00-07:00",
+    "ended_at": null,
+    "status": "active"
+  },
+  "latest_sample": null,
+  "active_pizza": null
+}

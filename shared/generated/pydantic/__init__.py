@@ -6,7 +6,16 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel, conint
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    PositiveInt,
+    RootModel,
+    conint,
+    constr,
+)
 
 
 class UdcpineWireTypes(RootModel[Any]):
@@ -21,3 +30,50 @@ class Firing(BaseModel):
     started_at: AwareDatetime
     ended_at: AwareDatetime | None
     status: Literal["active", "ended"]
+
+
+class Sample(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    t: AwareDatetime
+    temp_f: float
+
+
+class Pizza(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: conint(ge=0)
+    seq: PositiveInt
+    name: constr(min_length=1)
+    started_at: AwareDatetime
+    target_seconds: PositiveInt
+
+
+class LatestSample(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    t: AwareDatetime
+    temp_f: float
+
+
+class ActivePizza(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: conint(ge=0)
+    seq: PositiveInt
+    name: constr(min_length=1)
+    started_at: AwareDatetime
+    target_seconds: PositiveInt
+
+
+class LiveState(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    firing: Firing
+    latest_sample: LatestSample | None
+    active_pizza: ActivePizza | None

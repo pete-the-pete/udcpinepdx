@@ -1,0 +1,19 @@
+{
+  "firing": {
+    "id": 42,
+    "started_at": "2026-04-28T18:24:00-07:00",
+    "ended_at": null,
+    "status": "active"
+  },
+  "latest_sample": {
+    "t": "2026-04-28T19:46:48-07:00",
+    "temp_f": 847.0
+  },
+  "active_pizza": {
+    "id": 3,
+    "seq": 3,
+    "name": "Margherita",
+    "started_at": "2026-04-28T19:46:18-07:00",
+    "target_seconds": 150
+  }
+}
