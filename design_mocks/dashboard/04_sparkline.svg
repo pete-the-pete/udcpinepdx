@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <!-- 04 Sparkline-forward — temp graph dominates, current value overlaid, pizza pinned thin. -->
+  <rect width="1024" height="600" fill="#0A0E14"/>
+
+  <defs>
+    <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF6A1A" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#FF6A1A" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- top status -->
+  <g fill="#6B7585" font-size="13" letter-spacing="2">
+    <text x="40" y="38">FIRING #042 · 1:23:11</text>
+    <text x="984" y="38" text-anchor="end">19:47</text>
+  </g>
+  <circle cx="976" cy="34" r="4" fill="#3DDC84"/>
+
+  <!-- gridlines -->
+  <g stroke="#1A2230" stroke-width="1">
+    <line x1="40" y1="120" x2="984" y2="120"/>
+    <line x1="40" y1="220" x2="984" y2="220"/>
+    <line x1="40" y1="320" x2="984" y2="320"/>
+    <line x1="40" y1="420" x2="984" y2="420"/>
+  </g>
+  <g fill="#3F4A5C" font-size="11" letter-spacing="1">
+    <text x="40" y="116">1000°</text>
+    <text x="40" y="216">800°</text>
+    <text x="40" y="316">600°</text>
+    <text x="40" y="416">400°</text>
+  </g>
+
+  <!-- temperature curve (climbing toward 847) -->
+  <path d="M 40 460 L 100 440 L 160 410 L 220 380 L 280 350 L 340 320 L 400 295 L 460 280 L 520 260 L 580 240 L 640 220 L 700 200 L 760 188 L 820 178 L 880 173 L 940 174 Z L 940 420 L 940 480 L 40 480 Z"
+        fill="none"/>
+  <!-- area under curve -->
+  <path d="M 40 460 L 100 440 L 160 410 L 220 380 L 280 350 L 340 320 L 400 295 L 460 280 L 520 260 L 580 240 L 640 220 L 700 200 L 760 188 L 820 178 L 880 173 L 940 174 L 940 480 L 40 480 Z"
+        fill="url(#sparkfill)"/>
+  <!-- line on top -->
+  <path d="M 40 460 L 100 440 L 160 410 L 220 380 L 280 350 L 340 320 L 400 295 L 460 280 L 520 260 L 580 240 L 640 220 L 700 200 L 760 188 L 820 178 L 880 173 L 940 174"
+        fill="none" stroke="#FF6A1A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- current point -->
+  <circle cx="940" cy="174" r="6" fill="#FF6A1A"/>
+  <circle cx="940" cy="174" r="12" fill="#FF6A1A" fill-opacity="0.25"/>
+
+  <!-- big readout overlay top-left -->
+  <g transform="translate(80 70)">
+    <text x="0" y="0" fill="#6B7585" font-size="11" letter-spacing="3">HEARTH</text>
+    <text x="0" y="120" fill="#FFE9D6" font-size="170" font-weight="700" letter-spacing="-4">847°</text>
+    <text x="0" y="160" fill="#3DDC84" font-size="18" font-weight="500">▲ +12 this minute</text>
+  </g>
+
+  <!-- pizza strip pinned bottom -->
+  <g transform="translate(0 510)">
+    <rect x="0" y="0" width="1024" height="90" fill="#0E1420"/>
+    <line x1="0" y1="0" x2="1024" y2="0" stroke="#1A2230" stroke-width="1"/>
+
+    <g transform="translate(40 0)">
+      <text x="0" y="28" fill="#6B7585" font-size="11" letter-spacing="3">NOW BAKING</text>
+      <text x="0" y="64" fill="#FFE9D6" font-size="28" font-weight="600">Margherita</text>
+    </g>
+
+    <!-- progress bar middle -->
+    <g transform="translate(420 50)">
+      <rect width="280" height="6" rx="3" fill="#1A2230"/>
+      <rect width="168" height="6" rx="3" fill="#FF6A1A"/>
+      <text x="0" y="-12" fill="#6B7585" font-size="11" letter-spacing="2">PROGRESS · 60%</text>
+    </g>
+
+    <!-- timer right -->
+    <g transform="translate(984 0)" text-anchor="end">
+      <text x="0" y="28" fill="#6B7585" font-size="11" letter-spacing="3">ELAPSED</text>
+      <text x="0" y="64" fill="#FFE9D6" font-size="34" font-weight="600" font-variant-numeric="tabular-nums">1:42</text>
+    </g>
+  </g>
+</svg>

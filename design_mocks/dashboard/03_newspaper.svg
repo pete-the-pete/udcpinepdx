@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 600" font-family="Georgia, 'Times New Roman', serif">
+  <!-- 03 Newspaper — editorial, type-driven, restrained. Treats the firing as a story. -->
+  <rect width="1024" height="600" fill="#FBF7EF"/>
+
+  <!-- masthead -->
+  <g>
+    <text x="512" y="60" text-anchor="middle" fill="#1A1410" font-size="14" letter-spacing="6" font-family="-apple-system, sans-serif">UDCPINEPDX · LIVE EDITION</text>
+    <line x1="40" y1="80" x2="984" y2="80" stroke="#1A1410" stroke-width="2"/>
+    <line x1="40" y1="86" x2="984" y2="86" stroke="#1A1410" stroke-width="0.5"/>
+
+    <text x="40" y="110" fill="#5C5246" font-size="12" font-family="-apple-system, sans-serif" letter-spacing="2">FIRING NO. XLII · VOL. 1</text>
+    <text x="984" y="110" text-anchor="end" fill="#5C5246" font-size="12" font-family="-apple-system, sans-serif" letter-spacing="2">SUNDAY EVENING · 19:47 PT</text>
+  </g>
+
+  <!-- LEFT column: the headline (pizza) -->
+  <g>
+    <text x="40" y="180" fill="#9A8E7A" font-size="11" letter-spacing="3" font-family="-apple-system, sans-serif">NOW IN THE OVEN</text>
+    <text x="40" y="262" fill="#1A1410" font-size="68" font-weight="700" letter-spacing="-1">Margherita,</text>
+    <text x="40" y="324" fill="#1A1410" font-size="68" font-weight="700" letter-spacing="-1">first lap.</text>
+
+    <!-- deck -->
+    <text x="40" y="380" fill="#3A3128" font-size="20" font-style="italic">A classic, in at 18:46:18 —</text>
+    <text x="40" y="406" fill="#3A3128" font-size="20" font-style="italic">one minute and forty-two</text>
+    <text x="40" y="432" fill="#3A3128" font-size="20" font-style="italic">seconds elapsed.</text>
+
+    <!-- byline rule -->
+    <line x1="40" y1="468" x2="200" y2="468" stroke="#1A1410" stroke-width="1"/>
+    <text x="40" y="492" fill="#5C5246" font-size="13" font-family="-apple-system, sans-serif" letter-spacing="1">REPORTING FROM THE HEARTH</text>
+  </g>
+
+  <!-- vertical rule between columns -->
+  <line x1="624" y1="150" x2="624" y2="540" stroke="#D9D2C7" stroke-width="1"/>
+
+  <!-- RIGHT column: the temperature, pull-quote style -->
+  <g>
+    <text x="660" y="180" fill="#9A8E7A" font-size="11" letter-spacing="3" font-family="-apple-system, sans-serif">HEARTH TEMPERATURE</text>
+
+    <!-- big number, but serif, smaller than mock 1 -->
+    <text x="660" y="320" fill="#1A1410" font-size="160" font-weight="700" letter-spacing="-4">847°</text>
+
+    <!-- caption -->
+    <text x="660" y="370" fill="#3A3128" font-size="16" font-style="italic">"Twelve degrees up in the last</text>
+    <text x="660" y="392" fill="#3A3128" font-size="16" font-style="italic">minute. Steady climb."</text>
+
+    <!-- mini stats grid -->
+    <g font-family="-apple-system, sans-serif" fill="#1A1410">
+      <g transform="translate(660 440)">
+        <text fill="#9A8E7A" font-size="11" letter-spacing="2">PEAK</text>
+        <text y="24" font-size="22" font-weight="600">862°</text>
+      </g>
+      <g transform="translate(780 440)">
+        <text fill="#9A8E7A" font-size="11" letter-spacing="2">START</text>
+        <text y="24" font-size="22" font-weight="600">18:24</text>
+      </g>
+      <g transform="translate(900 440)">
+        <text fill="#9A8E7A" font-size="11" letter-spacing="2">PIZZAS</text>
+        <text y="24" font-size="22" font-weight="600">3</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- footer rule -->
+  <line x1="40" y1="560" x2="984" y2="560" stroke="#1A1410" stroke-width="0.5"/>
+  <text x="512" y="582" text-anchor="middle" fill="#9A8E7A" font-size="10" letter-spacing="3" font-family="-apple-system, sans-serif">UPDATES EVERY SECOND · TAP ANYWHERE TO LOG A NEW PIZZA</text>
+</svg>

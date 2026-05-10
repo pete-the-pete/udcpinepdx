@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>06 Brutalist Control Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #161513;
+    --ink: #F4EDE0;
+    --rule: #2A2824;
+    --signal: #FF4A00;
+    --cement: #5A554C;
+    --warn: #FFC700;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1024px; height: 600px; overflow: hidden; background: var(--bg); color: var(--ink); font-family: "JetBrains Mono", monospace; }
+
+  .sheet {
+    width: 1024px; height: 600px;
+    display: grid;
+    grid-template-rows: 56px 1fr 64px;
+    background:
+      linear-gradient(var(--rule) 1px, transparent 1px) 0 0 / 100% 32px,
+      var(--bg);
+    position: relative;
+  }
+
+  /* HEADER */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 2px solid var(--signal);
+    background: var(--bg);
+  }
+  header .lot { font-family: "Anton", sans-serif; font-size: 28px; letter-spacing: 2px; }
+  header .lot .num { color: var(--signal); }
+  header .meta { display: flex; gap: 24px; font-size: 11px; letter-spacing: 2px; color: var(--cement); text-transform: uppercase; }
+  header .meta b { color: var(--ink); font-weight: 400; margin-left: 6px; }
+  .live { display: inline-flex; align-items: center; gap: 8px; color: var(--warn); }
+  .live::before { content: ""; width: 8px; height: 8px; background: var(--warn); animation: blink 1.1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* MAIN */
+  main {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .temp {
+    padding: 24px 24px 12px;
+    border-right: 1px solid var(--rule);
+    position: relative;
+  }
+  .temp .label {
+    font-size: 11px; letter-spacing: 3px; color: var(--cement);
+    display: flex; justify-content: space-between;
+  }
+  .temp .label .tag { color: var(--signal); }
+  .temp .num {
+    font-family: "Anton", sans-serif;
+    font-size: 280px;
+    line-height: 0.85;
+    letter-spacing: -8px;
+    margin-top: 12px;
+    color: var(--ink);
+    position: relative;
+  }
+  .temp .num::after {
+    content: "°F";
+    font-size: 64px;
+    color: var(--signal);
+    vertical-align: top;
+    margin-left: 8px;
+    letter-spacing: 0;
+  }
+  .temp .delta {
+    margin-top: 8px;
+    display: flex; gap: 16px; font-size: 12px; letter-spacing: 2px;
+  }
+  .temp .delta b { color: var(--signal); font-weight: 400; }
+  .temp .stamp {
+    position: absolute; right: 24px; top: 24px;
+    border: 1px solid var(--signal);
+    padding: 6px 10px;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--signal);
+    transform: rotate(-2deg);
+  }
+
+  .pizza {
+    padding: 24px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 16px;
+  }
+  .pizza .header { border-bottom: 1px solid var(--rule); padding-bottom: 12px; }
+  .pizza .header .id {
+    font-size: 10px; letter-spacing: 4px; color: var(--cement);
+  }
+  .pizza .header .name {
+    font-family: "Anton", sans-serif; font-size: 56px; letter-spacing: 1px; line-height: 1;
+    margin-top: 8px;
+  }
+  .pizza .timer {
+    align-self: center;
+    font-family: "Anton", sans-serif; font-size: 110px; letter-spacing: -2px;
+    line-height: 0.9;
+    font-variant-numeric: tabular-nums;
+  }
+  .pizza .timer span { color: var(--signal); }
+  .pizza .progress {
+    height: 8px; background: var(--rule); position: relative;
+  }
+  .pizza .progress::after {
+    content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 60%;
+    background: var(--signal);
+  }
+  .pizza .footline {
+    display: flex; justify-content: space-between; font-size: 10px;
+    letter-spacing: 3px; color: var(--cement); text-transform: uppercase;
+  }
+  .pizza .footline b { color: var(--ink); font-weight: 400; }
+
+  /* TICKER */
+  footer {
+    background: var(--ink); color: var(--bg);
+    display: flex; align-items: center;
+    overflow: hidden;
+    position: relative;
+    border-top: 2px solid var(--signal);
+  }
+  footer .strip {
+    white-space: nowrap;
+    font-weight: 700;
+    letter-spacing: 4px;
+    font-size: 12px;
+    animation: scroll 28s linear infinite;
+    padding-left: 100%;
+  }
+  footer .strip span { padding: 0 24px; }
+  footer .strip span.hot { background: var(--signal); color: var(--ink); padding: 4px 16px; margin: 0 12px; }
+  @keyframes scroll { to { transform: translateX(-100%); } }
+
+  /* corner registration marks */
+  .reg { position: absolute; width: 14px; height: 14px; border: 1px solid var(--signal); }
+  .reg.tl { top: 8px; left: 8px; }
+  .reg.tr { top: 8px; right: 8px; }
+  .reg.bl { bottom: 8px; left: 8px; }
+  .reg.br { bottom: 8px; right: 8px; }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+
+    <header>
+      <div class="lot">FIRING <span class="num">№ 042</span></div>
+      <div class="meta">
+        <span>SHIFT<b>EVE</b></span>
+        <span>OPS<b>P. KEEN</b></span>
+        <span>SESSION<b>01:23:11</b></span>
+        <span class="live">REC</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="temp">
+        <div class="label"><span>HEARTH TEMPERATURE</span><span class="tag">T-01 ▮</span></div>
+        <div class="num">847</div>
+        <div class="stamp">SAMPLE 4983</div>
+        <div class="delta">
+          <span>Δ <b>+12 / 60s</b></span>
+          <span>PEAK <b>862°</b></span>
+          <span>FLOOR <b>412°</b></span>
+        </div>
+      </section>
+
+      <section class="pizza">
+        <div class="header">
+          <div class="id">P-03 // INSERTED 18:45:36</div>
+          <div class="name">MARGHERITA</div>
+        </div>
+        <div class="timer">01<span>:</span>42</div>
+        <div>
+          <div class="progress"></div>
+          <div class="footline" style="margin-top:8px;">
+            <span>TARGET <b>02:30</b></span>
+            <span>PROGRESS <b>60%</b></span>
+            <span>ETA <b>00:48</b></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="strip">
+        <span>UDCPINEPDX</span><span class="hot">LIVE</span>
+        <span>FIRING 042 ACTIVE 01:23:11</span>
+        <span>•</span>
+        <span>HEARTH 847°F · CLIMBING +12/MIN · PEAK 862°</span>
+        <span>•</span>
+        <span>NOW BAKING MARGHERITA · 01:42 ELAPSED · 60% TO TARGET</span>
+        <span>•</span>
+        <span>EARLIER: FUNGHI 02:18 · DIAVOLA 02:34 · QUATTRO 02:11</span>
+        <span>•</span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

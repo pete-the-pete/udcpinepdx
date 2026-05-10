@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>09 Hand-bound Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Special+Elite&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EFE4C8;
+    --paper-2: #E2D2AE;
+    --ink: #1B1612;
+    --ink-soft: #4D3F30;
+    --tea: #8B5A2B;
+    --red: #B23A2A;
+    --thread: #5A6B3A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1024px; height: 600px; overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "EB Garamond", serif;
+  }
+  .page {
+    width: 1024px; height: 600px; padding: 56px 64px;
+    background:
+      radial-gradient(ellipse 600px 200px at 80% 10%, rgba(139,90,43,0.10), transparent 60%),
+      radial-gradient(ellipse 400px 200px at 12% 88%, rgba(139,90,43,0.10), transparent 60%),
+      radial-gradient(circle at 25% 65%, rgba(139,90,43,0.18) 0, rgba(139,90,43,0.18) 22px, transparent 24px),
+      var(--paper);
+    position: relative;
+  }
+  /* paper grain (subtle multi-dot noise) */
+  .page::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      radial-gradient(circle at 14% 22%, rgba(80,55,30,0.07) 0, transparent 1.2px),
+      radial-gradient(circle at 67% 41%, rgba(80,55,30,0.06) 0, transparent 1.2px),
+      radial-gradient(circle at 33% 78%, rgba(80,55,30,0.07) 0, transparent 1.2px),
+      radial-gradient(circle at 88% 65%, rgba(80,55,30,0.06) 0, transparent 1.2px);
+    background-size: 9px 9px, 11px 11px, 13px 13px, 15px 15px;
+    mix-blend-mode: multiply;
+  }
+  /* horizontal rule lines, light */
+  .page::after {
+    content: ""; position: absolute; inset: 56px 64px;
+    background: repeating-linear-gradient(transparent 0, transparent 39px, rgba(80,55,30,0.10) 40px);
+    pointer-events: none;
+  }
+
+  /* tape strip top-left */
+  .tape {
+    position: absolute;
+    top: 18px; left: 80px;
+    width: 220px; height: 28px;
+    background: rgba(220, 200, 140, 0.65);
+    transform: rotate(-3deg);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    text-align: center;
+    font-family: "Special Elite", monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 28px;
+    letter-spacing: 2px;
+  }
+
+  /* stamp */
+  .stamp {
+    position: absolute;
+    top: 32px; right: 70px;
+    border: 3px double var(--red);
+    color: var(--red);
+    padding: 8px 14px;
+    font-family: "Special Elite", monospace;
+    font-size: 14px;
+    letter-spacing: 3px;
+    transform: rotate(6deg);
+    opacity: 0.85;
+    text-align: center;
+  }
+  .stamp .big { font-size: 22px; display: block; letter-spacing: 4px; }
+
+  .header-line {
+    margin-top: 12px;
+    font-family: "Special Elite", monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--ink-soft);
+  }
+
+  h1.title {
+    margin-top: 8px;
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: 92px;
+    line-height: 0.95;
+    color: var(--ink);
+  }
+  h1.title em { font-family: "EB Garamond", serif; font-style: italic; font-weight: 500; color: var(--ink-soft); font-size: 52px; }
+
+  .columns {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 32px;
+    position: relative;
+  }
+
+  /* LEFT: temp */
+  .temp .label {
+    font-family: "Special Elite", monospace;
+    font-size: 12px; letter-spacing: 2px;
+    color: var(--tea); text-transform: uppercase;
+  }
+  .temp .num {
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: 168px;
+    line-height: 0.9;
+    color: var(--ink);
+    margin-top: 6px;
+  }
+  .temp .num span { color: var(--red); }
+  .temp .squiggle {
+    margin-top: 4px;
+  }
+  .temp .note {
+    margin-top: 6px;
+    font-family: "Caveat", cursive;
+    font-size: 28px;
+    color: var(--ink-soft);
+    transform: rotate(-1deg);
+    display: inline-block;
+  }
+  .temp .note .arrow { color: var(--thread); }
+
+  /* RIGHT: pizza */
+  .pizza .label {
+    font-family: "Special Elite", monospace;
+    font-size: 12px; letter-spacing: 2px;
+    color: var(--tea); text-transform: uppercase;
+  }
+  .pizza .name {
+    margin-top: 4px;
+    font-family: "EB Garamond", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 44px;
+    color: var(--ink);
+  }
+  .pizza .clock {
+    margin-top: 12px;
+    font-family: "Caveat", cursive;
+    font-size: 90px;
+    line-height: 0.9;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .pizza .clock small {
+    display: block;
+    font-family: "EB Garamond", serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    transform: rotate(-1deg);
+    transform-origin: left;
+  }
+  /* hand-drawn checkboxes */
+  .pizza .checks {
+    margin-top: 16px;
+    display: grid; gap: 6px;
+    font-family: "Caveat", cursive;
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .pizza .checks div { display: flex; gap: 10px; align-items: center; }
+  .pizza .checks .box {
+    width: 18px; height: 18px;
+    border: 2px solid var(--ink);
+    border-radius: 3px;
+    transform: rotate(-2deg);
+    position: relative;
+  }
+  .pizza .checks .box.on::after {
+    content: "✓"; position: absolute; left: -3px; top: -10px;
+    font-family: "Caveat", cursive;
+    font-size: 32px;
+    color: var(--red);
+  }
+  .pizza .checks div.done { color: var(--ink-soft); text-decoration: line-through; text-decoration-color: var(--red); }
+
+  /* footer doodle */
+  .footer {
+    position: absolute;
+    bottom: 36px; left: 64px; right: 64px;
+    display: flex; justify-content: space-between;
+    align-items: end;
+    font-family: "Special Elite", monospace;
+    font-size: 11px; letter-spacing: 2px; color: var(--tea);
+    text-transform: uppercase;
+  }
+  .footer .arrow {
+    font-family: "Caveat", cursive;
+    font-size: 22px;
+    color: var(--ink-soft);
+    text-transform: none; letter-spacing: 0;
+    transform: rotate(-2deg);
+    display: inline-block;
+  }
+
+  /* live ink-blot pulse */
+  .blot {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--red); margin: 0 6px -1px;
+    animation: ink 2.4s ease-in-out infinite;
+  }
+  @keyframes ink {
+    0%, 100% { transform: scale(0.85); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="tape">FRI · 28 APR · EVE</div>
+
+    <div class="stamp">
+      FIRING
+      <span class="big">№ 042</span>
+    </div>
+
+    <div class="header-line">Hearth log — laid in 18:24 · sample 4983</div>
+
+    <h1 class="title">a hot one tonight, <em>steady climb.</em></h1>
+
+    <div class="columns">
+      <section class="temp">
+        <div class="label">Hearth ° F</div>
+        <div class="num">8<span>4</span>7<small style="font-size:48px;color:var(--tea);">°</small></div>
+
+        <!-- hand-drawn squiggle curve -->
+        <svg class="squiggle" width="420" height="56" viewBox="0 0 420 56">
+          <path d="M 4 48 C 40 46, 60 44, 100 38 S 180 22, 240 18 S 360 8, 416 6"
+                fill="none" stroke="#1B1612" stroke-width="2.5" stroke-linecap="round"
+                stroke-dasharray="0 0" />
+          <circle cx="416" cy="6" r="5" fill="#B23A2A"/>
+        </svg>
+
+        <div class="note">↗ +12° in the last minute — keep an eye on it</div>
+      </section>
+
+      <section class="pizza">
+        <div class="label">In the oven</div>
+        <div class="name">Margherita, № 3</div>
+        <div class="clock">1:42<small>of two and a half</small></div>
+
+        <div class="checks">
+          <div class="done"><span class="box on"></span>laid the dough</div>
+          <div class="done"><span class="box on"></span>first lap turn</div>
+          <div><span class="box"></span>second turn</div>
+          <div><span class="box"></span>pull at golden</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer">
+      <div>recording <span class="blot"></span>auto-saved to drive</div>
+      <div class="arrow">tap to add a pizza →</div>
+    </div>
+  </div>
+</body>
+</html>
