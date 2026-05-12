@@ -1,0 +1,15 @@
+WEB_FRONTEND_DIR := web/frontend
+
+.PHONY: web-frontend-install web-frontend-dev web-frontend-build web-frontend-lint
+
+web-frontend-install:
+	bun install --filter @udcpine/frontend
+
+web-frontend-dev:
+	cd $(WEB_FRONTEND_DIR) && bun run dev
+
+web-frontend-build:
+	cd $(WEB_FRONTEND_DIR) && bun run build
+
+web-frontend-lint:
+	cd $(WEB_FRONTEND_DIR) && bun run lint

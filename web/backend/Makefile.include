@@ -1,0 +1,15 @@
+WEB_BACKEND_DIR := web/backend
+
+.PHONY: web-backend-install web-backend-test web-backend-lint web-backend-run
+
+web-backend-install:
+	cd $(WEB_BACKEND_DIR) && uv sync
+
+web-backend-test:
+	cd $(WEB_BACKEND_DIR) && uv run pytest
+
+web-backend-lint:
+	cd $(WEB_BACKEND_DIR) && uv run ruff check .
+
+web-backend-run:
+	cd $(WEB_BACKEND_DIR) && uv run flask --app udcpine_backend.app:create_app run --debug --port 5001

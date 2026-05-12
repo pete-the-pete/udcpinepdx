@@ -39,6 +39,90 @@
         "status"
       ],
       "additionalProperties": false
+    },
+    "Sample": {
+      "type": "object",
+      "properties": {
+        "t": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "temp_f": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "t",
+        "temp_f"
+      ],
+      "additionalProperties": false
+    },
+    "Pizza": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "seq": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "target_seconds": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "id",
+        "seq",
+        "name",
+        "started_at",
+        "target_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "LiveState": {
+      "type": "object",
+      "properties": {
+        "firing": {
+          "$ref": "#/$defs/Firing"
+        },
+        "latest_sample": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sample"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active_pizza": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Pizza"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "firing",
+        "latest_sample",
+        "active_pizza"
+      ],
+      "additionalProperties": false
     }
   }
 }

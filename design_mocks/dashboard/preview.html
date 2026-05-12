@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard mocks — udcpinepdx</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      padding: 32px;
+      background: #14110E;
+      color: #E8E2D6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    h1 { margin: 0 0 8px; font-weight: 600; letter-spacing: -0.5px; }
+    p.lede { margin: 0 0 32px; color: #9A8E83; max-width: 720px; }
+    h2.section {
+      margin: 48px 0 16px; font-size: 12px; letter-spacing: 4px;
+      color: #7A6E63; text-transform: uppercase; font-weight: 500;
+      border-bottom: 1px solid #2A2520; padding-bottom: 8px;
+    }
+    .grid { display: grid; gap: 32px; grid-template-columns: 1fr; max-width: 1100px; }
+    figure { margin: 0; }
+    figure h3 { font-size: 22px; margin: 0 0 4px; font-weight: 600; }
+    figure .num { font-size: 11px; letter-spacing: 3px; color: #FF8A3D; font-weight: 500; margin: 0 0 4px; text-transform: uppercase; }
+    figure p { margin: 0 0 16px; color: #9A8E83; font-size: 14px; max-width: 60ch; }
+    .frame {
+      width: 1024px; max-width: 100%;
+      aspect-ratio: 1024 / 600;
+      border: 1px solid #2A2018;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      background: #000;
+    }
+    .frame img, .frame object, .frame iframe {
+      display: block; width: 100%; height: 100%;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dashboard mocks</h1>
+  <p class="lede">Ten directions for the live-firing dashboard. 1024×600 (Pi 7" landscape). The first five are static SVGs (round one); the second five are interactive HTML (round two, with proper type and motion). Pick a primary; we may keep others as alternate "view modes."</p>
+
+  <h2 class="section">Round 1 — Concept sketches (SVG)</h2>
+  <div class="grid">
+
+    <figure>
+      <div class="num">01</div>
+      <h3>Hero number</h3>
+      <p>Temperature is the headline — readable from across the room. Pizza pinned bottom. Maximalist, dark, ember palette.</p>
+      <div class="frame"><object type="image/svg+xml" data="01_hero_number.svg"></object></div>
+    </figure>
+
+    <figure>
+      <div class="num">02</div>
+      <h3>Split dial</h3>
+      <p>Analog gauge left, pizza panel right. Light, dashboard-classic, more information density.</p>
+      <div class="frame"><object type="image/svg+xml" data="02_split_dial.svg"></object></div>
+    </figure>
+
+    <figure>
+      <div class="num">03</div>
+      <h3>Newspaper</h3>
+      <p>Editorial, type-driven, restrained palette. Treats the firing as a story.</p>
+      <div class="frame"><object type="image/svg+xml" data="03_newspaper.svg"></object></div>
+    </figure>
+
+    <figure>
+      <div class="num">04</div>
+      <h3>Sparkline-forward</h3>
+      <p>Temp curve dominates the canvas; current value overlaid. Pizza becomes a thin strip.</p>
+      <div class="frame"><object type="image/svg+xml" data="04_sparkline.svg"></object></div>
+    </figure>
+
+    <figure>
+      <div class="num">05</div>
+      <h3>Pizza-first</h3>
+      <p>Circular cook-timer ring is the hero; temperature and counts are supporting cards.</p>
+      <div class="frame"><object type="image/svg+xml" data="05_pizza_first.svg"></object></div>
+    </figure>
+
+  </div>
+
+  <h2 class="section">Round 2 — Production-grade (HTML + Google Fonts + motion)</h2>
+  <div class="grid">
+
+    <figure>
+      <div class="num">06</div>
+      <h3>Brutalist control sheet</h3>
+      <p>Anton + JetBrains Mono. Heavy rules, signal orange, registration marks, scrolling ticker bottom. Reads like a factory shift-change board. Glanceable from across a kitchen.</p>
+      <div class="frame"><iframe src="06_brutalist.html"></iframe></div>
+    </figure>
+
+    <figure>
+      <div class="num">07</div>
+      <h3>Tasting menu</h3>
+      <p>Cormorant Garamond italic + brass hairlines on warm cream. Frames the firing as a single course on a fine-dining menu. Calm, restrained, gorgeous; not the most glanceable but the most charming.</p>
+      <div class="frame"><iframe src="07_luxury.html"></iframe></div>
+    </figure>
+
+    <figure>
+      <div class="num">08</div>
+      <h3>CRT arcade</h3>
+      <p>Press Start 2P + VT323 over scanlines and CRT glow. Phosphor green + amber + magenta. Pairs naturally with the chef sprite work in <code>design_mocks/</code>. The most "fun"; potentially fatiguing for long sessions.</p>
+      <div class="frame"><iframe src="08_arcade.html"></iframe></div>
+    </figure>
+
+    <figure>
+      <div class="num">09</div>
+      <h3>Hand-bound notebook</h3>
+      <p>Caveat + EB Garamond + Special Elite typewriter labels on kraft paper with grain, tape strip, red rubber stamp, hand-drawn temp squiggle. Cozy, intimate, "baker's lab notebook" energy.</p>
+      <div class="frame"><iframe src="09_notebook.html"></iframe></div>
+    </figure>
+
+    <figure>
+      <div class="num">10</div>
+      <h3>Mission control telemetry</h3>
+      <p>Major Mono Display + JetBrains Mono. Cyan/amber/green on near-black, crosshair behind a 60s temp trace, payload card, scrolling event log, function-key footer. Maximal information density; a little tonally absurd for a pizza oven, which is part of the joke.</p>
+      <div class="frame"><iframe src="10_telemetry.html"></iframe></div>
+    </figure>
+
+  </div>
+</body>
+</html>

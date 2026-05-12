@@ -8,13 +8,16 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from generated.pydantic import Firing
+from generated.pydantic import Firing, LiveState, Pizza, Sample
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
 # Map each Pydantic model to its fixture directory name.
 MODELS = {
     "firing": Firing,
+    "sample": Sample,
+    "pizza": Pizza,
+    "livestate": LiveState,
 }
 
 

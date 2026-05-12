@@ -12,33 +12,31 @@ if (existsSync(OUT_DIR)) rmSync(OUT_DIR, { recursive: true, force: true });
 mkdirSync(OUT_DIR, { recursive: true });
 
 // Bundle every registered schema under $defs in a single JSON Schema document.
-// Cross-references between top-level types resolve via $ref to #/$defs/<Name>.
-// Future-extension note: when more than one schema lands in ALL_SCHEMAS and
-// they cross-reference, verify the bundle's $ref paths resolve.
-// zod-to-json-schema's $refStrategy: "root" with definitionPath: "$defs" is
-// the right setting; if it produces refs datamodel-code-generator can't
-// follow, switch to inlining ($refStrategy: "none") or post-process.
-const bundle: Record<string, unknown> = {
+//
+// We make a SINGLE call to zodToJsonSchema with all schemas registered as
+// `definitions`. When the function encounters one of these schemas as a nested
+// property (e.g. FiringSchema inside LiveStateSchema), it emits a $ref pointing
+// at the sibling $defs entry instead of inlining the object. This keeps the
+// bundle compact AND lets datamodel-code-generator reuse a single Pydantic
+// class per type, instead of generating anonymous duplicates (LatestSample,
+// ActivePizza, etc.) for each inlined occurrence.
+//
+// The first arg is a dummy wrapper schema we discard; we only keep $defs.
+const generated = zodToJsonSchema(ALL_SCHEMAS.Firing, {
+  definitions: ALL_SCHEMAS as unknown as Record<string, never>,
+  target: "jsonSchema7",
+  $refStrategy: "root",
+  definitionPath: "$defs",
+  basePath: ["#"],
+});
+
+const defs = (generated as { $defs?: Record<string, unknown> }).$defs ?? {};
+
+const bundle = {
   $schema: "http://json-schema.org/draft-07/schema#",
   title: "udcpine wire types",
-  $defs: {},
+  $defs: defs,
 };
-
-const defs = bundle["$defs"] as Record<string, unknown>;
-
-for (const [name, schema] of Object.entries(ALL_SCHEMAS)) {
-  // zod-to-json-schema produces a {$ref, $defs} shape when given a name;
-  // we lift the named definition out and store it directly under $defs.
-  const generated = zodToJsonSchema(schema, {
-    name,
-    target: "jsonSchema7",
-    $refStrategy: "root",
-    definitionPath: "$defs",
-  });
-  const inner =
-    (generated as { $defs?: Record<string, unknown> }).$defs?.[name] ?? generated;
-  defs[name] = inner;
-}
 
 writeFileSync(OUT_FILE, JSON.stringify(bundle, null, 2) + "\n", "utf8");
 console.log(`wrote ${OUT_FILE} with ${Object.keys(defs).length} schema(s)`);
