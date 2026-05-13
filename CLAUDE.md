@@ -71,6 +71,22 @@ choices (especially around security, type safety, and token economy). When
 surfacing tradeoffs, say which one teaches Pete more. Prefer teaching
 explanations over hand-waving.
 
+## Workflow completion
+
+When all tasks in a plan are complete and tests + lint pass, the **default
+completion is push + PR** on the feature branch. Don't offer the
+finishing-a-development-branch 4-option menu — just push and open the PR
+with `gh pr create`, include a brief summary + test plan in the body, and
+report the URL.
+
+Skip the default and stop to ask when:
+
+- Tests or lint are still failing. Report; don't push.
+- The user has explicitly indicated a different end-state this session
+  ("keep the branch, I'll handle it later", etc.).
+- The branch contains anything destructive or out-of-scope that the user
+  hasn't seen.
+
 ## Safety rails
 
 - **No code without an approved plan.** If a request would add or change
@@ -78,9 +94,12 @@ explanations over hand-waving.
   there is no matching approved plan in `./plans/`, enter plan mode first.
 - **No dependency installs without a plan.** `npm install`, `pnpm add`,
   `pip install`, `uv add`, `apt install`, `brew install` — all gated.
-- **No GitHub writes without explicit user confirmation in-session.**
-  That includes `gh repo create`, force pushes, branch protection edits,
-  secrets edits, comment/issue creation.
+- **GitHub writes require fresh confirmation only for destructive or
+  administrative changes:** force-push, force-push to `main`, secrets
+  edits, branch protection changes, `gh repo create`, deleting remote
+  branches, closing/deleting issues or PRs not authored in this session.
+  Routine `git push` and `gh pr create` on a feature branch follow the
+  workflow above.
 - **Never skip hooks** (`--no-verify`, `--no-gpg-sign`). Fix the underlying
   issue.
 
