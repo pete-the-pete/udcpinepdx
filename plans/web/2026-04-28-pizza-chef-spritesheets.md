@@ -248,8 +248,8 @@ web/
           chef_very_hot.png            ← 8 frames
           raw/                         ← gitignored
             <YYYY-MM-DD>/              ← one folder per Ideogram session
-              ideogram_<n>.png         ← unmodified Ideogram output
-              prompt.txt               ← exact prompt that produced it
+              <state>_<nn>.png         ← unmodified Ideogram output (keepers only)
+              <state>_<nn>.prompt.txt  ← exact prompt that produced it
 plans/
   web/
     2026-04-28-pizza-chef-spritesheets.md   ← this plan
@@ -262,9 +262,11 @@ Conventions:
 - **Sheets are committed.** They are the deliverable.
 - **Raw Ideogram outputs are gitignored.** Huge, numerous, only useful
   mid-session. Keep locally as long as useful, delete when satisfied.
-- **`prompt.txt` next to each raw output.** Cheap insurance against
-  losing the recipe — future-you (or a future model) can see exactly
-  what produced any given frame.
+- **One `<state>_<nn>.prompt.txt` per kept `<state>_<nn>.png`.** Same
+  basename, paired one-to-one. Cheap insurance against losing the recipe
+  — future-you (or a future model) can see exactly what produced any
+  given frame. `nn` is attempt order within that state (`01`, `02`, …);
+  it does not have to be contiguous if you re-roll and discard.
 - **Sheet naming = state name from manifest.** No version suffixes; when
   a sheet improves, commit over the previous one. Git history is the
   version log.
@@ -300,18 +302,20 @@ Generation budgets are ~1.5× the kept-frame count to absorb re-rolls.
 3. Generate. Inspect. Re-roll if drift is too large (face changed,
    anchor moved, wardrobe wrong).
 4. Save kept output to
-   `web/frontend/src/assets/chef/raw/<YYYY-MM-DD>/ideogram_<n>.png`.
-5. Save the exact prompt to `prompt.txt` next to it.
-6. Background-remove. Tool decided at execution; `rembg` CLI is the
+   `web/frontend/src/assets/chef/raw/<YYYY-MM-DD>/<state>_<nn>.png`
+   and the exact prompt to `<state>_<nn>.prompt.txt` next to it.
+   `nn` is attempt order within that state; only save keepers, not
+   rejected re-rolls.
+5. Background-remove. Tool decided at execution; `rembg` CLI is the
    leading candidate (free, scriptable, lives in a venv).
-7. Resize to 512×512, anchor character feet to the bottom edge.
-8. Pack frames into the horizontal sheet `chef_<state>.png`. For v1
+6. Resize to 512×512, anchor character feet to the bottom edge.
+7. Pack frames into the horizontal sheet `chef_<state>.png`. For v1
    single frame, the "sheet" is just one image. Script choice deferred
    (Python+Pillow, Node+sharp, or shell+ImageMagick).
-9. Update `chef.manifest.json` with the current frame count for that
+8. Update `chef.manifest.json` with the current frame count for that
    state.
-10. Commit. One commit per state per session, e.g.
-    `art(chef): frozen v1 — 2 frames`.
+9. Commit. One commit per state per session, e.g.
+   `art(chef): frozen v1 — 1 frame + CSS shiver`.
 
 ### Quality gates
 
