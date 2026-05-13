@@ -94,7 +94,14 @@
       "type": "object",
       "properties": {
         "firing": {
-          "$ref": "#/$defs/Firing"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Firing"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "latest_sample": {
           "anyOf": [

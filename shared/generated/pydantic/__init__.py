@@ -55,6 +55,6 @@ class LiveState(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    firing: Firing
+    firing: Firing | None
     latest_sample: Sample | None
     active_pizza: Pizza | None
