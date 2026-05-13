@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from generated.pydantic import Firing, LiveState, Pizza, Sample
+from generated.pydantic import Firing, LiveEvent, LiveState, Pizza, Sample
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -18,6 +18,7 @@ MODELS = {
     "sample": Sample,
     "pizza": Pizza,
     "livestate": LiveState,
+    "liveevent": LiveEvent,
 }
 
 

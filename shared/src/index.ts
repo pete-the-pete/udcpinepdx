@@ -2,12 +2,14 @@ import { FiringSchema } from "./firing.ts";
 import { SampleSchema } from "./sample.ts";
 import { PizzaSchema } from "./pizza.ts";
 import { LiveStateSchema } from "./live-state.ts";
+import { LiveEventSchema } from "./live-event.ts";
 
-export { FiringSchema, SampleSchema, PizzaSchema, LiveStateSchema };
+export { FiringSchema, SampleSchema, PizzaSchema, LiveStateSchema, LiveEventSchema };
 export type { Firing } from "./firing.ts";
 export type { Sample } from "./sample.ts";
 export type { Pizza } from "./pizza.ts";
 export type { LiveState } from "./live-state.ts";
+export type { LiveEvent, SampleEvent } from "./live-event.ts";
 
 /**
  * Registry of every top-level schema. The codegen walks this object;
@@ -19,4 +21,5 @@ export const ALL_SCHEMAS = {
   Sample: SampleSchema,
   Pizza: PizzaSchema,
   LiveState: LiveStateSchema,
+  LiveEvent: LiveEventSchema,
 } as const;

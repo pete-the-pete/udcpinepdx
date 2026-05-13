@@ -58,3 +58,32 @@ class LiveState(BaseModel):
     firing: Firing | None
     latest_sample: Sample | None
     active_pizza: Pizza | None
+
+
+class LiveEvent1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    type: Literal["sample"]
+    t: AwareDatetime
+    temp_f: float
+
+
+class LiveEvent2(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    type: Literal["firing_started"]
+    firing: Firing
+
+
+class LiveEvent3(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    type: Literal["firing_ended"]
+    firing_id: conint(ge=0)
+
+
+class LiveEvent(RootModel[LiveEvent1 | LiveEvent2 | LiveEvent3]):
+    root: LiveEvent1 | LiveEvent2 | LiveEvent3
