@@ -6,6 +6,8 @@ Each subsequent plan replaces a chunk.
 
 from __future__ import annotations
 
+import json
+
 from flask import Flask, Response
 
 from generated.pydantic import LiveState
@@ -49,5 +51,20 @@ def create_app(store: Store | None = None) -> Flask:
         if ended is None:
             return Response('{"error":"no active firing"}', mimetype="application/json"), 409
         return Response(ended.model_dump_json(), mimetype="application/json")
+
+    @app.get("/api/stream")
+    def get_stream() -> Response:
+        q = s.subscribe()
+
+        def gen():
+            try:
+                yield ": connected\n\n"
+                while True:
+                    event = q.get()
+                    yield f"data: {json.dumps(event)}\n\n"
+            finally:
+                s.unsubscribe(q)
+
+        return Response(gen(), mimetype="text/event-stream")
 
     return app
