@@ -87,3 +87,15 @@ class LiveEvent3(BaseModel):
 
 class LiveEvent(RootModel[LiveEvent1 | LiveEvent2 | LiveEvent3]):
     root: LiveEvent1 | LiveEvent2 | LiveEvent3
+
+
+class StartFiringRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+
+
+class EndFiringRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )

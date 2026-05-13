@@ -191,6 +191,16 @@
           "additionalProperties": false
         }
       ]
+    },
+    "StartFiringRequest": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "EndFiringRequest": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
     }
   }
 }
