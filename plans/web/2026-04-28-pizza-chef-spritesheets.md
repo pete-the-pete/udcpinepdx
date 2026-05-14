@@ -368,10 +368,16 @@ Owned by no plan today; noted for future:
   pizza" tap). Belongs to a future "ambient mascot" plan that would
   also revisit articulation.
 
-## Open questions deferred to execution
+## Decisions made during execution
 
-These are easy to swap; pre-bikeshedding them now wastes time. They will
-be decided after Session 1, when the actual workflow has been touched.
+These were deferred to execution to avoid pre-bikeshedding. Recorded here
+once chosen so future sessions stay consistent.
 
-- Background-removal tool: `rembg` CLI, remove.bg web, or Photoshop.
-- Sheet-packing script: Python+Pillow, Node+sharp, or shell+ImageMagick.
+- **Background-removal tool: `rembg` CLI.** Free, scriptable, lives in
+  a Python venv. Aligns with the Python tooling already in use on the
+  firmware side, so the asset pipeline stays in one language.
+- **Sheet-packing script: Python + Pillow.** Same rationale — one
+  language for the whole asset pipeline. The pack script lives at
+  `web/frontend/src/assets/chef/scripts/pack.py` (created when first
+  needed); it reads `chef.manifest.json` to learn the per-state frame
+  count and writes the horizontal-strip PNG.
