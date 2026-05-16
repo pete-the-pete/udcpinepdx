@@ -45,3 +45,41 @@ jobs:
 
       - name: Test
         run: make test
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install workspace deps
+        run: make build
+
+      - name: Install Playwright Chromium
+        run: cd web/frontend && bunx playwright install --with-deps chromium
+
+      - name: Run E2E
+        run: make e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/frontend/playwright-report/
+          retention-days: 7
