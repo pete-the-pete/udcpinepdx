@@ -4,7 +4,7 @@ include shared/Makefile.include
 include web/backend/Makefile.include
 include web/frontend/Makefile.include
 
-.PHONY: help build codegen test lint dev
+.PHONY: help build codegen test lint dev e2e
 
 help:
 	@echo "Available targets:"
@@ -13,6 +13,7 @@ help:
 	@echo "  test      run all test suites"
 	@echo "  lint      run all linters"
 	@echo "  dev       run Flask + Vite together (Ctrl-C stops both)"
+	@echo "  e2e       run Playwright end-to-end tests (boots both servers)"
 
 build:
 	bun install
@@ -28,3 +29,5 @@ lint: shared-lint web-backend-lint web-frontend-lint
 dev:
 	@echo "Starting Flask (:5001) and Vite (:5173)…"
 	@$(MAKE) -j2 web-backend-run web-frontend-dev
+
+e2e: web-frontend-e2e
