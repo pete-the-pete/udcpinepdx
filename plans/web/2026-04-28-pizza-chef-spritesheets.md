@@ -96,11 +96,11 @@ plan.
   {
     "frame_size": [512, 512],
     "states": {
-      "frozen":   { "frames": 1, "fps": null, "css_animation": "shiver", "temp_c": [null, 121] },
-      "thawing":  { "frames": 3, "fps": 6,    "temp_c": [121, 177] },
-      "active":   { "frames": 5, "fps": 8,    "temp_c": [177, 232] },
-      "hot":      { "frames": 6, "fps": 10,   "temp_c": [232, 288] },
-      "very_hot": { "frames": 8, "fps": 12,   "temp_c": [288, null] }
+      "frozen":   { "frames": 1, "fps": null, "css_animation": "shiver", "temp_f": [null, 250] },
+      "thawing":  { "frames": 3, "fps": 6,    "temp_f": [250, 350] },
+      "active":   { "frames": 5, "fps": 8,    "temp_f": [350, 450] },
+      "hot":      { "frames": 6, "fps": 10,   "temp_f": [450, 550] },
+      "very_hot": { "frames": 8, "fps": 12,   "temp_f": [550, null] }
     }
   }
   ```
@@ -113,11 +113,13 @@ plan.
   one — this plan only declares which states want one and what motion
   it should convey (e.g., `frozen` wants "shiver").
 
-  The originally specified °F values (200/300/400/500) were band
-  *centers* — "Frozen ~200°F", etc. The manifest values are the °C
-  *edges between bands*, computed as midpoints between adjacent centers
-  (250/350/450/550 °F → 121/177/232/288 °C). Precise hysteresis around
-  these edges is the engine plan's decision, not this plan's.
+  `temp_f` values are the band *edges* in °F — the same unit the
+  backend reports (`latest_sample.temp_f`) and the dashboard displays,
+  so the engine compares against them directly with no conversion. The
+  edges (250/350/450/550) are midpoints between the originally
+  specified band *centers* (200/300/400/500 °F — "Frozen ~200°F",
+  etc.). Precise hysteresis around these edges is the engine plan's
+  decision, not this plan's.
 
 - **v1 escape hatch:** until each state has its full frame count, the
   manifest declares a smaller `frames` value and the engine renders
