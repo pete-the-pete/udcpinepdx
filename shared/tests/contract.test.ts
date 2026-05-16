@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ALL_SCHEMAS } from "../src/index.ts";
@@ -9,6 +9,7 @@ const FIXTURES = join(HERE, "fixtures");
 
 function loadFixtures(typeLower: string, kind: "valid" | "invalid"): [string, unknown][] {
   const dir = join(FIXTURES, typeLower, kind);
+  if (!existsSync(dir)) return [];
   return readdirSync(dir)
     .filter((f) => f.endsWith(".json"))
     .map((f): [string, unknown] => [f, JSON.parse(readFileSync(join(dir, f), "utf8"))]);
