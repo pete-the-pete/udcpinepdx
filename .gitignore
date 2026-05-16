@@ -54,4 +54,7 @@ logs/
 .claude/settings.local.json
 
 # ---- Chef spritesheet raw Ideogram outputs (per plans/web/2026-04-28-pizza-chef-spritesheets.md) ----
-**/assets/chef/raw/
+**/chef/raw/
+
+# ---- design/ tooling venv ----
+design/.venv/

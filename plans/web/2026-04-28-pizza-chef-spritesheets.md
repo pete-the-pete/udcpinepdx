@@ -234,22 +234,33 @@ visually continuous.
 
 ## Repo layout & asset naming
 
+Processing tooling and raw outputs live under the root `design/`
+directory, separate from the frontend. Only the committed deliverable
+(the packed sheets + manifest) lands in `web/frontend/`, because the
+frontend bundles those assets at build time.
+
 ```
+design/
+  pyproject.toml                       ← rembg + Pillow; uv-managed
+  mocks/                               ← SVG concept-board generators
+  chef/
+    scripts/
+      pack.py                          ← background-remove + resize + pack
+    raw/                               ← gitignored
+      <YYYY-MM-DD>/                    ← one folder per Ideogram session
+        <state>_<nn>.png               ← unmodified Ideogram output (keepers only)
+        <state>_<nn>.prompt.txt         ← exact prompt that produced it
 web/
   frontend/
     src/
       assets/
-        chef/
+        chef/                          ← the committed deliverable only
           chef.manifest.json           ← the contract above
-          chef_frozen.png              ← horizontal sheet, 2 frames
+          chef_frozen.png              ← horizontal sheet, 1 frame
           chef_thawing.png             ← 3 frames
           chef_active.png              ← 5 frames
           chef_hot.png                 ← 6 frames
           chef_very_hot.png            ← 8 frames
-          raw/                         ← gitignored
-            <YYYY-MM-DD>/              ← one folder per Ideogram session
-              <state>_<nn>.png         ← unmodified Ideogram output (keepers only)
-              <state>_<nn>.prompt.txt  ← exact prompt that produced it
 plans/
   web/
     2026-04-28-pizza-chef-spritesheets.md   ← this plan
@@ -302,7 +313,7 @@ Generation budgets are ~1.5× the kept-frame count to absorb re-rolls.
 3. Generate. Inspect. Re-roll if drift is too large (face changed,
    anchor moved, wardrobe wrong).
 4. Save kept output to
-   `web/frontend/src/assets/chef/raw/<YYYY-MM-DD>/<state>_<nn>.png`
+   `design/chef/raw/<YYYY-MM-DD>/<state>_<nn>.png`
    and the exact prompt to `<state>_<nn>.prompt.txt` next to it.
    `nn` is attempt order within that state; only save keepers, not
    rejected re-rolls.
@@ -378,6 +389,12 @@ once chosen so future sessions stay consistent.
   firmware side, so the asset pipeline stays in one language.
 - **Sheet-packing script: Python + Pillow.** Same rationale — one
   language for the whole asset pipeline. The pack script lives at
-  `web/frontend/src/assets/chef/scripts/pack.py` (created when first
-  needed); it reads `chef.manifest.json` to learn the per-state frame
-  count and writes the horizontal-strip PNG.
+  `design/chef/scripts/pack.py` (created when first needed); it reads
+  `chef.manifest.json` to learn the per-state frame count and writes
+  the horizontal-strip PNG into `web/frontend/src/assets/chef/`.
+- **Processing tooling lives under root `design/`, not the frontend.**
+  Background removal, resizing, and packing are design-time concerns,
+  not frontend code. `design/` also absorbs the former `design_mocks/`
+  (now `design/mocks/`) so all design tooling is in one place. Only the
+  packed sheets + manifest — the assets the frontend bundles — are
+  written into `web/frontend/src/assets/chef/`.
