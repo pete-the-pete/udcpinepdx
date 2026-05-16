@@ -21,7 +21,10 @@ export default defineConfig({
     baseURL: "http://localhost:5173",
     trace: "retain-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile-chromium", use: { ...devices["Pixel 7"] } },
+  ],
   webServer: [
     {
       command: "cd ../backend && uv run flask --app udcpine_backend.app:create_app run --port 5001",
