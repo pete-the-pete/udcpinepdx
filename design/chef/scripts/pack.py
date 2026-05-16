@@ -27,11 +27,11 @@ FRAME = 512
 # Fixed contract metadata per state. `frames` is computed from the raw
 # inputs that actually exist — see the v1 escape hatch in the plan.
 STATES: dict[str, dict] = {
-    "frozen": {"fps": None, "css_animation": "shiver", "temp_c": [None, 121]},
-    "thawing": {"fps": 6, "temp_c": [121, 177]},
-    "active": {"fps": 8, "temp_c": [177, 232]},
-    "hot": {"fps": 10, "temp_c": [232, 288]},
-    "very_hot": {"fps": 12, "temp_c": [288, None]},
+    "frozen": {"fps": None, "css_animation": "shiver", "temp_f": [None, 250]},
+    "thawing": {"fps": 6, "temp_f": [250, 350]},
+    "active": {"fps": 8, "temp_f": [350, 450]},
+    "hot": {"fps": 10, "temp_f": [450, 550]},
+    "very_hot": {"fps": 12, "temp_f": [550, None]},
 }
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -95,7 +95,7 @@ def rebuild_manifest() -> None:
         entry = {"frames": count, "fps": meta["fps"]}
         if "css_animation" in meta:
             entry["css_animation"] = meta["css_animation"]
-        entry["temp_c"] = meta["temp_c"]
+        entry["temp_f"] = meta["temp_f"]
         states[state] = entry
 
     manifest = {"frame_size": [FRAME, FRAME], "states": states}

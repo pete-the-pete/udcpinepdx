@@ -8,33 +8,33 @@
       "frames": 1,
       "fps": null,
       "css_animation": "shiver",
-      "temp_c": [
+      "temp_f": [
         null,
-        121
+        250
       ]
     },
     "thawing": {
       "frames": 1,
       "fps": 6,
-      "temp_c": [
-        121,
-        177
+      "temp_f": [
+        250,
+        350
       ]
     },
     "active": {
       "frames": 1,
       "fps": 8,
-      "temp_c": [
-        177,
-        232
+      "temp_f": [
+        350,
+        450
       ]
     },
     "hot": {
       "frames": 1,
       "fps": 10,
-      "temp_c": [
-        232,
-        288
+      "temp_f": [
+        450,
+        550
       ]
     }
   }
