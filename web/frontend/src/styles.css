@@ -159,4 +159,25 @@ body { min-height: 100dvh; }
     font-size: 12px;
     letter-spacing: 3px;
   }
+
+  /* Active view: the hearth number is clamp(180px,28vw,280px) — on a
+     ~390px screen 28vw≈109px so it pins to the 180px floor, which is
+     fine, but the unit/label spacing needs tightening. */
+  .hero__num {
+    font-size: clamp(140px, 40vw, 200px);
+    letter-spacing: -4px;
+  }
+  .hero__unit {
+    font-size: 16px;
+    letter-spacing: 4px;
+  }
+
+  /* The right-side cluster (LIVE + STOP) sits below the firing id when
+     the header wraps; keep it tidy. */
+  .hero__right {
+    gap: 12px;
+  }
+  .hero__stop {
+    padding: 8px 16px;
+  }
 }
