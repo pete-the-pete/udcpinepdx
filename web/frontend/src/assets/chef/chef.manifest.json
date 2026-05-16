@@ -1,0 +1,41 @@
+{
+  "frame_size": [
+    512,
+    512
+  ],
+  "states": {
+    "frozen": {
+      "frames": 1,
+      "fps": null,
+      "css_animation": "shiver",
+      "temp_c": [
+        null,
+        121
+      ]
+    },
+    "thawing": {
+      "frames": 1,
+      "fps": 6,
+      "temp_c": [
+        121,
+        177
+      ]
+    },
+    "active": {
+      "frames": 1,
+      "fps": 8,
+      "temp_c": [
+        177,
+        232
+      ]
+    },
+    "hot": {
+      "frames": 1,
+      "fps": 10,
+      "temp_c": [
+        232,
+        288
+      ]
+    }
+  }
+}
