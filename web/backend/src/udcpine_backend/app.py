@@ -1,25 +1,44 @@
 """Flask app factory and route definitions.
 
-The app is intentionally tiny: one shared Store + a mock sensor thread.
-Each subsequent plan replaces a chunk.
+One shared firing Store + one AuthStore + a mock sensor thread. Every
+/api/* route except the auth exchange requires a valid session cookie.
 """
 
 from __future__ import annotations
 
 import json
+import os
+import secrets
 
-from flask import Flask, Response
+from flask import Flask, Response, request
+from generated.pydantic import ExchangeRequest, LiveState
+from pydantic import ValidationError
 
-from generated.pydantic import LiveState
-
+from .auth_store import AuthStore
 from .mock_sensor import MockSensorThread
 from .store import Store
 
+SESSION_COOKIE = "udcpine_session"
+# 30 days; HttpOnly + Lax. Not Secure — see plan, HTTP on the LAN.
+_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 30
 
-def create_app(store: Store | None = None) -> Flask:
+
+def create_app(store: Store | None = None, auth: AuthStore | None = None) -> Flask:
     app = Flask(__name__)
     s = store if store is not None else Store()
+
+    if auth is None:
+        bootstrap = os.environ.get("UDCPINE_BOOTSTRAP_TOKEN") or secrets.token_urlsafe(16)
+        auth = AuthStore(bootstrap_token=bootstrap)
+        # The console is the root of trust: whoever sees this line can pair
+        # the first device. 5173 is the Vite dev port the phone/laptop hit.
+        print(
+            f"\n  🔑  Pair this device:  http://localhost:5173/?t={bootstrap}\n",
+            flush=True,
+        )
+
     app.config["STORE"] = s
+    app.config["AUTH"] = auth
 
     sensor: MockSensorThread | None = None
 
@@ -32,6 +51,20 @@ def create_app(store: Store | None = None) -> Flask:
     @app.before_request
     def _kick_sensor() -> None:
         ensure_sensor()
+
+    @app.before_request
+    def _require_auth():
+        # Only /api/* is gated. The auth exchange must stay open — it is
+        # the only way to obtain a cookie in the first place.
+        path = request.path
+        if not path.startswith("/api/"):
+            return None
+        if path == "/api/auth/exchange":
+            return None
+        cookie = request.cookies.get(SESSION_COOKIE, "")
+        if cookie and auth.validate_cookie(cookie):
+            return None
+        return Response('{"error":"unauthorized"}', status=401, mimetype="application/json")
 
     @app.get("/api/state")
     def get_state() -> Response:
@@ -66,5 +99,35 @@ def create_app(store: Store | None = None) -> Flask:
                 s.unsubscribe(q)
 
         return Response(gen(), mimetype="text/event-stream")
+
+    @app.post("/api/auth/exchange")
+    def post_auth_exchange() -> tuple[Response, int] | Response:
+        try:
+            body = ExchangeRequest.model_validate(request.get_json(silent=True) or {})
+        except ValidationError as e:
+            return Response(
+                json.dumps({"error": e.errors(include_url=False)}),
+                status=400,
+                mimetype="application/json",
+            )
+        cookie = auth.exchange(body.token)
+        if cookie is None:
+            return Response('{"error":"invalid token"}', status=401, mimetype="application/json")
+        resp = Response('{"ok":true}', mimetype="application/json")
+        resp.set_cookie(
+            SESSION_COOKIE,
+            cookie,
+            max_age=_COOKIE_MAX_AGE_S,
+            httponly=True,
+            samesite="Lax",
+            path="/",
+        )
+        return resp
+
+    @app.post("/api/auth/pairing")
+    def post_auth_pairing() -> Response:
+        # Reached only past the _require_auth gate, so the caller is paired.
+        token = auth.mint_pairing_token()
+        return Response(json.dumps({"token": token}), mimetype="application/json")
 
     return app
