@@ -2,6 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import type { Firing, LiveState } from "@udcpine/shared";
 import { endFiring } from "../api";
 import { PairPhoneOverlay } from "./pair-phone-overlay";
+import { ChefWidget } from "../chef/ChefWidget";
 
 interface HeroNumberProps {
   state: LiveState & { firing: Firing };
@@ -88,6 +89,8 @@ export function HeroNumber({ state, onEnded }: HeroNumberProps) {
         <div class="hero__unit">DEGREES FAHRENHEIT</div>
         {latest_sample === null && <div class="hero__delta">awaiting sensor data</div>}
       </section>
+
+      <ChefWidget latest_sample={latest_sample} />
 
       {pairing && <PairPhoneOverlay onClose={() => setPairing(false)} />}
     </main>

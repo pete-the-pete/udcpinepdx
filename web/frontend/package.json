@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 5173",
     "lint": "tsc --noEmit",
+    "test": "bun test src",
     "e2e": "playwright test"
   },
   "dependencies": {

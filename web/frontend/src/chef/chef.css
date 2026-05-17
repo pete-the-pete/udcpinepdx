@@ -1,0 +1,49 @@
+.chef--compact {
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
+  width: 200px;
+  height: 200px;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.chef--expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  cursor: pointer;
+  background: rgba(14, 11, 8, 0.97);
+}
+
+.chef__sprite {
+  width: 200px;
+  height: 200px;
+  background-repeat: no-repeat;
+  background-position: 0% 0%;
+}
+
+.chef--expanded .chef__sprite {
+  width: min(70vw, 70vh);
+  height: min(70vw, 70vh);
+}
+
+.chef__temp {
+  font-size: 72px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--signal);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Applied to `frozen` via the manifest's css_animation. A small wobble;
+   uses `transform`, so it composes with the background-position cycle. */
+@keyframes chef-shiver {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
