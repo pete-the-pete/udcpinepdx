@@ -201,6 +201,37 @@
       "type": "object",
       "properties": {},
       "additionalProperties": false
+    },
+    "ExchangeRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "token"
+      ],
+      "additionalProperties": false
+    },
+    "PairingToken": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lan_ip": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "token",
+        "lan_ip"
+      ],
+      "additionalProperties": false
     }
   }
 }

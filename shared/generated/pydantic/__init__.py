@@ -99,3 +99,18 @@ class EndFiringRequest(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+
+
+class ExchangeRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    token: constr(min_length=1)
+
+
+class PairingToken(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    token: constr(min_length=1)
+    lan_ip: constr(min_length=1)

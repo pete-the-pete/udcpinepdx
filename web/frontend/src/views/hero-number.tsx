@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import type { Firing, LiveState } from "@udcpine/shared";
 import { endFiring } from "../api";
+import { PairPhoneOverlay } from "./pair-phone-overlay";
 
 interface HeroNumberProps {
   state: LiveState & { firing: Firing };
@@ -28,6 +29,7 @@ function formatHMS(ms: number): string {
 export function HeroNumber({ state, onEnded }: HeroNumberProps) {
   const now = useTick(1000);
   const [stopBusy, setStopBusy] = useState(false);
+  const [pairing, setPairing] = useState(false);
   const { firing, latest_sample } = state;
 
   const firingElapsed = formatHMS(now - Date.parse(firing.started_at));
@@ -57,6 +59,9 @@ export function HeroNumber({ state, onEnded }: HeroNumberProps) {
             <span class="hero__dot" aria-hidden="true" />
             LIVE
           </span>
+          <button type="button" class="hero__pair" onClick={() => setPairing(true)}>
+            PAIR A PHONE
+          </button>
           <button
             type="button"
             class="hero__stop"
@@ -81,10 +86,10 @@ export function HeroNumber({ state, onEnded }: HeroNumberProps) {
           {tempLabel}
         </div>
         <div class="hero__unit">DEGREES FAHRENHEIT</div>
-        {latest_sample === null && (
-          <div class="hero__delta">awaiting sensor data</div>
-        )}
+        {latest_sample === null && <div class="hero__delta">awaiting sensor data</div>}
       </section>
+
+      {pairing && <PairPhoneOverlay onClose={() => setPairing(false)} />}
     </main>
   );
 }

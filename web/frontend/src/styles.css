@@ -131,6 +131,62 @@ body { min-height: 100dvh; }
 }
 .hero__stop:disabled { opacity: 0.6; cursor: progress; }
 
+/* Pair screen (unauthenticated) */
+.pair {
+  position: relative; z-index: 1;
+  align-self: center;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.pair__title { font-size: 40px; font-weight: 700; margin: 0 0 24px; }
+.pair__steps { color: var(--ink-soft); font-size: 17px; line-height: 1.7; padding-left: 22px; }
+.pair__steps b { color: var(--ink); }
+
+/* "Pair a phone" header button — quiet, sits next to the status text. */
+.hero__pair {
+  appearance: none;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid var(--bg-3);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.hero__pair:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+/* QR overlay */
+.overlay {
+  position: fixed; inset: 0; z-index: 10;
+  background: rgba(0, 0, 0, 0.72);
+  display: grid; place-items: center;
+}
+.overlay__card {
+  background: var(--bg-2);
+  border: 1px solid var(--bg-3);
+  border-radius: 18px;
+  padding: 32px;
+  text-align: center;
+  display: grid; gap: 14px; justify-items: center;
+}
+.overlay__title { margin: 0; font-size: 24px; font-weight: 600; }
+.overlay__hint { margin: 0; color: var(--ink-soft); font-size: 14px; }
+.overlay__err { margin: 0; color: var(--signal); font-size: 13px; }
+.overlay__qr { width: 320px; height: 320px; border-radius: 10px; background: #fff; }
+.overlay__close {
+  appearance: none;
+  margin-top: 6px;
+  background: var(--signal);
+  color: var(--bg);
+  border: 0; border-radius: 999px;
+  padding: 12px 32px;
+  font-family: inherit; font-weight: 600; font-size: 15px;
+  letter-spacing: 2px; cursor: pointer;
+}
+
 /* ---- Portrait phones ------------------------------------------------- */
 @media (max-width: 640px) {
   .hero {
@@ -180,4 +236,9 @@ body { min-height: 100dvh; }
   .hero__stop {
     padding: 8px 16px;
   }
+
+  /* Pairing UI shrinks to fit a phone. */
+  .overlay__card { padding: 24px; }
+  .overlay__qr { width: 260px; height: 260px; }
+  .pair__title { font-size: 30px; }
 }
