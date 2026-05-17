@@ -130,3 +130,54 @@ body { min-height: 100dvh; }
   color: var(--bg);
 }
 .hero__stop:disabled { opacity: 0.6; cursor: progress; }
+
+/* ---- Portrait phones ------------------------------------------------- */
+@media (max-width: 640px) {
+  .hero {
+    width: 100vw;
+    padding: 0 20px;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  /* Status header: let the firing-id text and the live/stop cluster
+     stack instead of colliding on a narrow row. */
+  .hero__status {
+    padding-top: 24px;
+    font-size: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Idle screen: the kiosk button is 42px text + 56px padding — far too
+     wide for ~390px. Scale it down to a comfortable phone tap target. */
+  .idle__start {
+    padding: 22px 36px;
+    font-size: 28px;
+    letter-spacing: 4px;
+  }
+  .idle__caption {
+    font-size: 12px;
+    letter-spacing: 3px;
+  }
+
+  /* Active view: the hearth number is clamp(180px,28vw,280px) — on a
+     ~390px screen 28vw≈109px so it pins to the 180px floor, which is
+     fine, but the unit/label spacing needs tightening. */
+  .hero__num {
+    font-size: clamp(140px, 40vw, 200px);
+    letter-spacing: -4px;
+  }
+  .hero__unit {
+    font-size: 16px;
+    letter-spacing: 4px;
+  }
+
+  /* The right-side cluster (LIVE + STOP) sits below the firing id when
+     the header wraps; keep it tidy. */
+  .hero__right {
+    gap: 12px;
+  }
+  .hero__stop {
+    padding: 8px 16px;
+  }
+}
