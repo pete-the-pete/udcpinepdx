@@ -4,6 +4,7 @@ import {
   PairingTokenSchema,
   type Firing,
   type LiveState,
+  type PairingToken,
 } from "@udcpine/shared";
 
 /** Thrown when a request comes back 401 — the device is not paired. */
@@ -60,8 +61,12 @@ export async function exchangeToken(token: string): Promise<boolean> {
   return res.ok;
 }
 
-/** Mint a one-shot pairing token (caller must already be paired). */
-export async function mintPairingToken(): Promise<string> {
+/**
+ * Mint a one-shot pairing token (caller must already be paired). Returns
+ * the token plus the server's LAN IP, so the QR can point a phone at a
+ * reachable address rather than the kiosk's `localhost`.
+ */
+export async function mintPairingToken(): Promise<PairingToken> {
   const res = await fetch("/api/auth/pairing", { method: "POST" });
   if (res.status === 401) throw new UnauthorizedError();
   if (!res.ok) throw new Error(`/api/auth/pairing returned ${res.status}`);
@@ -69,5 +74,5 @@ export async function mintPairingToken(): Promise<string> {
   if (!parsed.success) {
     throw new Error(`/api/auth/pairing contract violation: ${parsed.error.message}`);
   }
-  return parsed.data.token;
+  return parsed.data;
 }

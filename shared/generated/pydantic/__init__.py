@@ -113,3 +113,4 @@ class PairingToken(BaseModel):
         extra="forbid",
     )
     token: constr(min_length=1)
+    lan_ip: constr(min_length=1)

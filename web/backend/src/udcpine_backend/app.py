@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import secrets
+import socket
 
 from flask import Flask, Response, request
 from generated.pydantic import ExchangeRequest, LiveState
@@ -21,6 +22,22 @@ from .store import Store
 SESSION_COOKIE = "udcpine_session"
 # 30 days; HttpOnly + Lax. Not Secure — see plan, HTTP on the LAN.
 _COOKIE_MAX_AGE_S = 60 * 60 * 24 * 30
+
+
+def _lan_ip() -> str:
+    """Best-effort detection of this machine's primary LAN IP — the
+    interface that routes toward the internet. Used so the pairing QR
+    points a phone at a reachable address instead of `localhost`.
+    Opening a UDP socket does not send traffic; it just resolves routing.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return str(s.getsockname()[0])
+    except OSError:
+        return "127.0.0.1"
+    finally:
+        s.close()
 
 
 def create_app(store: Store | None = None, auth: AuthStore | None = None) -> Flask:
@@ -128,6 +145,9 @@ def create_app(store: Store | None = None, auth: AuthStore | None = None) -> Fla
     def post_auth_pairing() -> Response:
         # Reached only past the _require_auth gate, so the caller is paired.
         token = auth.mint_pairing_token()
-        return Response(json.dumps({"token": token}), mimetype="application/json")
+        return Response(
+            json.dumps({"token": token, "lan_ip": _lan_ip()}),
+            mimetype="application/json",
+        )
 
     return app

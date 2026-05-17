@@ -8,9 +8,12 @@ interface PairPhoneOverlayProps {
 
 /**
  * Overlay shown from the authed dashboard. Mints a one-shot pairing token
- * and renders a QR of `<origin>/?t=<token>` for a phone to scan. The
- * origin is taken from window.location so the QR points at whatever LAN
- * address this device is already using.
+ * and renders a QR for a phone to scan.
+ *
+ * The QR host is the server's detected LAN IP, NOT window.location.host:
+ * the kiosk browser is usually opened at `localhost`, and a QR pointing a
+ * phone at `localhost` would send it to its own loopback. The port and
+ * protocol still come from window.location (correct as-is in dev).
  */
 export function PairPhoneOverlay({ onClose }: PairPhoneOverlayProps) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
@@ -19,8 +22,9 @@ export function PairPhoneOverlay({ onClose }: PairPhoneOverlayProps) {
   useEffect(() => {
     let cancelled = false;
     mintPairingToken()
-      .then((token) => {
-        const url = `${window.location.origin}/?t=${encodeURIComponent(token)}`;
+      .then(({ token, lan_ip }) => {
+        const port = window.location.port ? `:${window.location.port}` : "";
+        const url = `${window.location.protocol}//${lan_ip}${port}/?t=${encodeURIComponent(token)}`;
         return QRCode.toDataURL(url, { width: 320, margin: 2 });
       })
       .then((png) => {

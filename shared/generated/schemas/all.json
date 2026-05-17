@@ -221,10 +221,15 @@
         "token": {
           "type": "string",
           "minLength": 1
+        },
+        "lan_ip": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [
-        "token"
+        "token",
+        "lan_ip"
       ],
       "additionalProperties": false
     }
