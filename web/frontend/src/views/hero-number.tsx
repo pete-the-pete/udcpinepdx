@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import type { Firing, LiveState } from "@udcpine/shared";
 import { endFiring } from "../api";
+import { ChefWidget } from "../chef/ChefWidget";
 
 interface HeroNumberProps {
   state: LiveState & { firing: Firing };
@@ -85,6 +86,8 @@ export function HeroNumber({ state, onEnded }: HeroNumberProps) {
           <div class="hero__delta">awaiting sensor data</div>
         )}
       </section>
+
+      <ChefWidget latest_sample={latest_sample} />
     </main>
   );
 }
