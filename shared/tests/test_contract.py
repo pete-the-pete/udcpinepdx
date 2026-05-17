@@ -8,7 +8,15 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from generated.pydantic import Firing, LiveEvent, LiveState, Pizza, Sample
+from generated.pydantic import (
+    ExchangeRequest,
+    Firing,
+    LiveEvent,
+    LiveState,
+    PairingToken,
+    Pizza,
+    Sample,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -19,6 +27,8 @@ MODELS = {
     "pizza": Pizza,
     "livestate": LiveState,
     "liveevent": LiveEvent,
+    "exchangerequest": ExchangeRequest,
+    "pairingtoken": PairingToken,
 }
 
 
