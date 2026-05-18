@@ -29,8 +29,8 @@ FRAME = 512
 STATES: dict[str, dict] = {
     "frozen": {"fps": None, "css_animation": "shiver", "temp_f": [None, 250]},
     "thawing": {"fps": 6, "temp_f": [250, 350]},
-    "active": {"fps": 8, "temp_f": [350, 450]},
-    "hot": {"fps": 10, "temp_f": [450, 550]},
+    "active": {"fps": 8, "css_animation": "jig", "temp_f": [350, 450]},
+    "hot": {"fps": 10, "css_animation": "heat", "temp_f": [450, 550]},
     "very_hot": {"fps": 12, "temp_f": [550, None]},
 }
 

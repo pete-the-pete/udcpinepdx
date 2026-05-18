@@ -24,6 +24,7 @@
     "active": {
       "frames": 1,
       "fps": 8,
+      "css_animation": "jig",
       "temp_f": [
         350,
         450
@@ -32,6 +33,7 @@
     "hot": {
       "frames": 1,
       "fps": 10,
+      "css_animation": "heat",
       "temp_f": [
         450,
         550
