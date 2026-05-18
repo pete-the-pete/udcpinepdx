@@ -69,6 +69,9 @@ function ChefDemo() {
   }
 
   const sample: Sample = { t: new Date().toISOString(), temp_f: tempF };
+  // Mirror ChefWidget's internal hysteresis ref so the panel readout matches
+  // the widget. They stay in sync because both run selectState over the same
+  // temperature sequence in the same order.
   const state = selectState(tempF, prevState.current, manifest);
   prevState.current = state;
   const clamped = !tempInSomeBand(tempF);
@@ -91,6 +94,7 @@ function ChefDemo() {
         </div>
         <input
           type="range"
+          aria-label="oven temperature"
           min={MIN_F}
           max={MAX_F}
           value={tempF}
