@@ -21,16 +21,22 @@
   background: rgba(14, 11, 8, 0.97);
 }
 
-.chef__sprite {
+.chef__stage {
+  position: relative;
   width: 200px;
   height: 200px;
-  background-repeat: no-repeat;
-  background-position: 0% 0%;
 }
 
-.chef--expanded .chef__sprite {
+.chef--expanded .chef__stage {
   width: min(70vw, 70vh);
   height: min(70vw, 70vh);
+}
+
+.chef__sprite {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: 0% 0%;
 }
 
 .chef__temp {
@@ -46,4 +52,57 @@
 @keyframes chef-shiver {
   0%, 100% { transform: rotate(-2.5deg); }
   50% { transform: rotate(2.5deg); }
+}
+
+/* `active` — a happy jig: hop onto one foot, down, onto the other, down.
+   rotateY needs a perspective; translateY is in % so it scales with the
+   stage in both widget modes. */
+@keyframes chef-jig {
+  0%   { transform: perspective(620px) rotateY(0deg)   translateY(0); }
+  25%  { transform: perspective(620px) rotateY(22deg)  translateY(-13%); }
+  50%  { transform: perspective(620px) rotateY(0deg)   translateY(0); }
+  75%  { transform: perspective(620px) rotateY(-22deg) translateY(-13%); }
+  100% { transform: perspective(620px) rotateY(0deg)   translateY(0); }
+}
+
+/* `hot` — a red glow that pulses around the chef's silhouette. drop-shadow
+   follows the sprite PNG's alpha, so the glow hugs his shape. */
+@keyframes chef-hot-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 70, 0, 0.4)); }
+  50%      { filter: drop-shadow(0 0 24px rgba(255, 105, 35, 0.95)); }
+}
+
+/* `hot` — rising steam wisps, rendered behind the sprite. */
+.chef__steam {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.chef__wisp {
+  position: absolute;
+  bottom: 42%;
+  width: 14%;
+  height: 14%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 240, 225, 0.6) 0%,
+    rgba(255, 240, 225, 0) 70%
+  );
+  filter: blur(5px);
+  opacity: 0;
+  animation: chef-steam 2.8s ease-in infinite;
+}
+
+.chef__wisp:nth-child(1) { left: 33%; animation-delay: 0s; }
+.chef__wisp:nth-child(2) { left: 47%; animation-delay: 0.95s; }
+.chef__wisp:nth-child(3) { left: 61%; animation-delay: 1.85s; }
+
+/* translateY is in % of the wisp's own size, so the rise scales with the
+   stage; the wisp grows and fades as it climbs. */
+@keyframes chef-steam {
+  0%   { opacity: 0;    transform: translateY(0) scale(0.65); }
+  20%  { opacity: 0.65; }
+  100% { opacity: 0;    transform: translateY(-320%) scale(1.5); }
 }
