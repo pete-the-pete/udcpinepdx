@@ -50,11 +50,32 @@ function injectCycleKeyframes(): void {
 }
 
 /**
+ * The css_animation catalogue. The manifest declares a name per state; this
+ * map defines what each name means — a CSS animation on the sprite, and
+ * optionally decoration (steam wisps). Transform (shiver/jig), filter (glow),
+ * and background-position (frame cycle) are distinct properties, so a state's
+ * sprite animation always composes with the cycle without conflict.
+ */
+interface ChefEffect {
+  sprite: string;
+  steam?: boolean;
+}
+
+const CHEF_EFFECTS: Record<string, ChefEffect> = {
+  shiver: { sprite: "chef-shiver 0.18s ease-in-out infinite" },
+  jig: { sprite: "chef-jig 0.72s ease-in-out infinite" },
+  heat: { sprite: "chef-hot-glow 1.3s ease-in-out infinite", steam: true },
+};
+
+/**
  * The renderer seam. A future Approach B canvas renderer can replace this
  * unit without touching the state machine or the widget's mode logic.
  */
 function ChefSprite({ state }: { state: ChefState }) {
   const spec = manifest.states[state];
+  const effect = spec.css_animation
+    ? CHEF_EFFECTS[spec.css_animation]
+    : undefined;
   const url = sheetFor(state);
   const style: JSX.CSSProperties = {
     backgroundImage: url ? `url("${url}")` : "none",
@@ -70,12 +91,21 @@ function ChefSprite({ state }: { state: ChefState }) {
   } else {
     style.backgroundSize = "100% 100%";
   }
-  if (spec.css_animation === "shiver") {
-    animations.push("chef-shiver 0.18s ease-in-out infinite");
-  }
+  if (effect) animations.push(effect.sprite);
   if (animations.length > 0) style.animation = animations.join(", ");
 
-  return <div class="chef__sprite" style={style} aria-hidden="true" />;
+  return (
+    <div class="chef__stage">
+      {effect?.steam && (
+        <div class="chef__steam" aria-hidden="true">
+          <span class="chef__wisp" />
+          <span class="chef__wisp" />
+          <span class="chef__wisp" />
+        </div>
+      )}
+      <div class="chef__sprite" style={style} aria-hidden="true" />
+    </div>
+  );
 }
 
 interface ChefWidgetProps {
