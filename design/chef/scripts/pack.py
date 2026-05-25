@@ -31,7 +31,7 @@ STATES: dict[str, dict] = {
     "thawing": {"fps": 6, "temp_f": [250, 350]},
     "active": {"fps": 8, "css_animation": "jig", "temp_f": [350, 450]},
     "hot": {"fps": 10, "css_animation": "heat", "temp_f": [450, 550]},
-    "very_hot": {"fps": 12, "temp_f": [550, None]},
+    "very_hot": {"fps": 12, "css_animation": "transcendence", "temp_f": [550, None]},
 }
 
 REPO_ROOT = Path(__file__).resolve().parents[3]

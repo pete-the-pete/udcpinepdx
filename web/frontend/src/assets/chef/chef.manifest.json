@@ -42,6 +42,7 @@
     "very_hot": {
       "frames": 1,
       "fps": 12,
+      "css_animation": "transcendence",
       "temp_f": [
         550,
         null
