@@ -44,3 +44,31 @@ def test_rows_are_dict_accessible(tmp_path) -> None:
     )
     row = conn.execute("SELECT * FROM firing").fetchone()
     assert row["status"] == "active"  # row_factory gives name access
+
+
+def test_pizza_table_exists(tmp_path) -> None:
+    conn = connect(str(tmp_path / "t.db"))
+    tables = {
+        row[0]
+        for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+    }
+    assert "pizza" in tables
+
+
+def test_pizza_seq_unique_per_firing(tmp_path) -> None:
+    conn = connect(str(tmp_path / "t.db"))
+    conn.execute(
+        "INSERT INTO firing (started_at, ended_at, status) VALUES (?, ?, ?)",
+        ("2026-01-01T00:00:00Z", None, "active"),
+    )
+    firing_id = conn.execute("SELECT id FROM firing").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO pizza (firing_id, seq, name, started_at, ended_at) VALUES (?, 1, 'a', '2026-01-01T00:00:00Z', NULL)",
+        (firing_id,),
+    )
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO pizza (firing_id, seq, name, started_at, ended_at) VALUES (?, 1, 'b', '2026-01-01T00:00:00Z', NULL)",
+            (firing_id,),
+        )
+    conn.commit()
