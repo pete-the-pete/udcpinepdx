@@ -1,0 +1,9 @@
+[project]
+name = "udcpine-design"
+version = "0.0.0"
+description = "Design tooling: SVG concept-board generators and the chef spritesheet processing pipeline."
+requires-python = ">=3.11"
+dependencies = [
+    "rembg[cpu]",
+    "pillow",
+]

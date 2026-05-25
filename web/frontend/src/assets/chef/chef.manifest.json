@@ -1,0 +1,52 @@
+{
+  "frame_size": [
+    512,
+    512
+  ],
+  "states": {
+    "frozen": {
+      "frames": 1,
+      "fps": null,
+      "css_animation": "shiver",
+      "temp_f": [
+        null,
+        250
+      ]
+    },
+    "thawing": {
+      "frames": 1,
+      "fps": 6,
+      "temp_f": [
+        250,
+        350
+      ]
+    },
+    "active": {
+      "frames": 1,
+      "fps": 8,
+      "css_animation": "jig",
+      "temp_f": [
+        350,
+        450
+      ]
+    },
+    "hot": {
+      "frames": 1,
+      "fps": 10,
+      "css_animation": "heat",
+      "temp_f": [
+        450,
+        550
+      ]
+    },
+    "very_hot": {
+      "frames": 1,
+      "fps": 12,
+      "css_animation": "transcendence",
+      "temp_f": [
+        550,
+        null
+      ]
+    }
+  }
+}

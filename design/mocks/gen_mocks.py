@@ -1,9 +1,9 @@
 """
 gen_mocks.py  — generates three SVG concept boards for the pizza-chef temperature animation.
-Run with:  python3 design_mocks/gen_mocks.py
-Output:    design_mocks/chef_mock_A_retro_hero.svg
-           design_mocks/chef_mock_B_chunky_cozy.svg
-           design_mocks/chef_mock_C_cool_linecook.svg
+Run with:  python3 design/mocks/gen_mocks.py
+Output:    design/mocks/chef_mock_A_retro_hero.svg
+           design/mocks/chef_mock_B_chunky_cozy.svg
+           design/mocks/chef_mock_C_cool_linecook.svg
 """
 
 from pathlib import Path

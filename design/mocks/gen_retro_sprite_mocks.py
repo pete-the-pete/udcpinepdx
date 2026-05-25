@@ -1,11 +1,11 @@
 """
 Generate retro-video-game style (non-pixel-limited) chef concept boards.
 Run:
-  python3 design_mocks/gen_retro_sprite_mocks.py
+  python3 design/mocks/gen_retro_sprite_mocks.py
 Outputs:
-  - design_mocks/chef_retro_sprite_A_arcade.svg
-  - design_mocks/chef_retro_sprite_B_brawler.svg
-  - design_mocks/chef_retro_sprite_C_comedy.svg
+  - design/mocks/chef_retro_sprite_A_arcade.svg
+  - design/mocks/chef_retro_sprite_B_brawler.svg
+  - design/mocks/chef_retro_sprite_C_comedy.svg
 """
 
 from pathlib import Path
