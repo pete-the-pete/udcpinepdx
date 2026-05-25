@@ -1,16 +1,14 @@
-"""In-memory session state for the dashboard.
+"""SQLite-backed session state for the dashboard.
 
-A Store instance is the single source of truth for "what's the oven doing
-right now." It holds at most one active firing, the most recent sample,
-and a list of SSE subscribers. All access is serialized by an internal
-lock so the Flask threadpool and the mock sensor thread can hit it
-concurrently without races.
+SQLite is authoritative. The Store keeps two in-memory caches — the active
+firing and the latest sample — purely as a read-through optimization so
+that /api/state and the 1 Hz sensor tick don't hit the database to read.
+Every mutation writes through to SQLite and updates the cache under one
+lock. On construction the Store rehydrates the caches from the database,
+so a restart mid-firing resumes cleanly.
 
-Published events are plain dicts (NOT Pydantic models). The SSE handler
-JSON-encodes them; tests assert their shape directly. A server-side
-contract test (test_store.py) validates that emitted dicts round-trip
-through the generated LiveEvent Pydantic class, so dict-shape drift is
-caught here rather than on the frontend.
+Published events are plain dicts (see test_store.py's contract test); the
+SSE pub/sub is in-memory and ephemeral by design.
 """
 
 from __future__ import annotations
@@ -21,17 +19,45 @@ from typing import Any
 
 from generated.pydantic import Firing, Sample
 
+from .db import connect
 from .time_source import Clock, SystemClock
 
 
+def _firing_from_row(row: Any) -> Firing:
+    return Firing.model_validate(
+        {
+            "id": row["id"],
+            "started_at": row["started_at"],
+            "ended_at": row["ended_at"],
+            "status": row["status"],
+        }
+    )
+
+
 class Store:
-    def __init__(self, clock: Clock | None = None) -> None:
+    def __init__(self, db_path: str, clock: Clock | None = None) -> None:
         self._clock: Clock = clock if clock is not None else SystemClock()
         self._lock = threading.Lock()
+        self._conn = connect(db_path)
+        self._subscribers: list[queue.Queue[dict[str, Any]]] = []
         self._firing: Firing | None = None
         self._latest_sample: Sample | None = None
-        self._next_id = 1
-        self._subscribers: list[queue.Queue[dict[str, Any]]] = []
+        self._rehydrate()
+
+    def _rehydrate(self) -> None:
+        """Load any active firing (and its latest sample) into the caches."""
+        row = self._conn.execute(
+            "SELECT * FROM firing WHERE status='active' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        if row is None:
+            return
+        self._firing = _firing_from_row(row)
+        srow = self._conn.execute(
+            "SELECT t, temp_f FROM sample WHERE firing_id=? ORDER BY id DESC LIMIT 1",
+            (self._firing.id,),
+        ).fetchone()
+        if srow is not None:
+            self._latest_sample = Sample(t=srow["t"], temp_f=srow["temp_f"])
 
     # ---- state accessors --------------------------------------------------
     def firing(self) -> Firing | None:
@@ -42,18 +68,34 @@ class Store:
         with self._lock:
             return self._latest_sample
 
+    def samples(self, firing_id: int) -> list[Sample]:
+        """The full sample series for a firing, oldest first."""
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT t, temp_f FROM sample WHERE firing_id=? ORDER BY id",
+                (firing_id,),
+            ).fetchall()
+        return [Sample(t=r["t"], temp_f=r["temp_f"]) for r in rows]
+
     # ---- mutators ---------------------------------------------------------
     def start_firing(self) -> Firing:
         with self._lock:
             if self._firing is not None:
                 return self._firing
-            firing = Firing(
-                id=self._next_id,
-                started_at=self._clock.now(),
-                ended_at=None,
-                status="active",
+            started_at = self._clock.now().isoformat()
+            cur = self._conn.execute(
+                "INSERT INTO firing (started_at, ended_at, status) VALUES (?, NULL, 'active')",
+                (started_at,),
             )
-            self._next_id += 1
+            self._conn.commit()
+            firing = Firing.model_validate(
+                {
+                    "id": cur.lastrowid,
+                    "started_at": started_at,
+                    "ended_at": None,
+                    "status": "active",
+                }
+            )
             self._firing = firing
             self._latest_sample = None
             event: dict[str, Any] = {
@@ -67,6 +109,12 @@ class Store:
         with self._lock:
             if self._firing is None:
                 return None
+            ended_at = self._clock.now().isoformat()
+            self._conn.execute(
+                "UPDATE firing SET ended_at=?, status='ended' WHERE id=?",
+                (ended_at, self._firing.id),
+            )
+            self._conn.commit()
             ended = self._firing.model_copy(
                 update={"ended_at": self._clock.now(), "status": "ended"}
             )
@@ -78,8 +126,17 @@ class Store:
         return ended
 
     def publish_sample(self, *, temp_f: float) -> None:
+        """Record a hearth reading for the active firing. A no-op when the
+        oven is idle — a sample belongs to a firing."""
         with self._lock:
+            if self._firing is None:
+                return
             t = self._clock.now()
+            self._conn.execute(
+                "INSERT INTO sample (firing_id, t, temp_f) VALUES (?, ?, ?)",
+                (self._firing.id, t.isoformat(), temp_f),
+            )
+            self._conn.commit()
             self._latest_sample = Sample(t=t, temp_f=temp_f)
             event: dict[str, Any] = {
                 "type": "sample",
@@ -107,6 +164,4 @@ class Store:
             try:
                 q.put_nowait(event)
             except queue.Full:
-                # A subscriber that can't keep up is treated as dropped; the
-                # client will reconnect and re-prime from /api/state.
                 self.unsubscribe(q)
