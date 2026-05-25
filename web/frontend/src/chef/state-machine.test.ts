@@ -8,12 +8,14 @@ describe("selectState", () => {
     expect(selectState(300, null, manifest)).toBe("thawing");
     expect(selectState(400, null, manifest)).toBe("active");
     expect(selectState(500, null, manifest)).toBe("hot");
+    expect(selectState(700, null, manifest)).toBe("very_hot");
   });
 
   it("treats edges as [low, high) — an edge lands in the upper band", () => {
     expect(selectState(250, null, manifest)).toBe("thawing");
     expect(selectState(350, null, manifest)).toBe("active");
     expect(selectState(450, null, manifest)).toBe("hot");
+    expect(selectState(550, null, manifest)).toBe("very_hot");
   });
 
   it("returns frozen for a null sample", () => {
@@ -22,9 +24,19 @@ describe("selectState", () => {
   });
 
   it("clamps to the nearest present state when no band matches", () => {
-    // 550 and above fall in the deferred `very_hot` band — clamp to `hot`.
-    expect(selectState(550, null, manifest)).toBe("hot");
-    expect(selectState(600, null, manifest)).toBe("hot");
+    // Construct an incomplete manifest so we can exercise the clamp escape
+    // hatch regardless of which states the art track has actually shipped.
+    const partial = {
+      frame_size: manifest.frame_size,
+      states: {
+        frozen: manifest.states.frozen,
+        thawing: manifest.states.thawing,
+        active: manifest.states.active,
+      },
+    } as typeof manifest;
+    // 500 and 700 fall in the absent hot / very_hot bands → clamp to active.
+    expect(selectState(500, null, partial)).toBe("active");
+    expect(selectState(700, null, partial)).toBe("active");
   });
 
   it("holds prevState within the hysteresis dead-band", () => {
