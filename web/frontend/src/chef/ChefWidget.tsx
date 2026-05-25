@@ -59,12 +59,18 @@ function injectCycleKeyframes(): void {
 interface ChefEffect {
   sprite: string;
   steam?: boolean;
+  aura?: boolean;
 }
 
 const CHEF_EFFECTS: Record<string, ChefEffect> = {
   shiver: { sprite: "chef-shiver 0.18s ease-in-out infinite" },
   jig: { sprite: "chef-jig 0.72s ease-in-out infinite" },
   heat: { sprite: "chef-hot-glow 1.3s ease-in-out infinite", steam: true },
+  transcendence: {
+    sprite:
+      "chef-transcend 16s linear infinite, chef-trippy-filter 12s linear infinite",
+    aura: true,
+  },
 };
 
 /**
@@ -96,6 +102,13 @@ function ChefSprite({ state }: { state: ChefState }) {
 
   return (
     <div class="chef__stage">
+      {effect?.aura && (
+        <div class="chef__aura" aria-hidden="true">
+          <span class="chef__halo" />
+          <span class="chef__halo" />
+          <span class="chef__halo" />
+        </div>
+      )}
       {effect?.steam && (
         <div class="chef__steam" aria-hidden="true">
           <span class="chef__wisp" />
