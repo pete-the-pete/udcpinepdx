@@ -1,11 +1,11 @@
 """SQLite-backed session state for the dashboard.
 
-SQLite is authoritative. The Store keeps two in-memory caches — the active
-firing and the latest sample — purely as a read-through optimization so
-that /api/state and the 1 Hz sensor tick don't hit the database to read.
-Every mutation writes through to SQLite and updates the cache under one
-lock. On construction the Store rehydrates the caches from the database,
-so a restart mid-firing resumes cleanly.
+SQLite is authoritative. The Store keeps in-memory caches for the active
+firing, the latest sample, and the active pizza, purely as a read-through
+optimization so that /api/state and the 1 Hz sensor tick don't hit the
+database to read. Every mutation writes through to SQLite and updates the
+cache under one lock. On construction the Store rehydrates the caches
+from the database, so a restart mid-firing resumes cleanly.
 
 Published events are plain dicts (see test_store.py's contract test); the
 SSE pub/sub is in-memory and ephemeral by design.
@@ -17,7 +17,7 @@ import queue
 import threading
 from typing import Any
 
-from generated.pydantic import Firing, Sample
+from generated.pydantic import Firing, Pizza, Sample
 
 from .db import connect
 from .time_source import Clock, SystemClock
@@ -34,6 +34,19 @@ def _firing_from_row(row: Any) -> Firing:
     )
 
 
+def _pizza_from_row(row: Any) -> Pizza:
+    return Pizza.model_validate(
+        {
+            "id": row["id"],
+            "firing_id": row["firing_id"],
+            "seq": row["seq"],
+            "name": row["name"],
+            "started_at": row["started_at"],
+            "ended_at": row["ended_at"],
+        }
+    )
+
+
 class Store:
     def __init__(self, db_path: str, clock: Clock | None = None) -> None:
         self._clock: Clock = clock if clock is not None else SystemClock()
@@ -42,10 +55,11 @@ class Store:
         self._subscribers: list[queue.Queue[dict[str, Any]]] = []
         self._firing: Firing | None = None
         self._latest_sample: Sample | None = None
+        self._active_pizza: Pizza | None = None
         self._rehydrate()
 
     def _rehydrate(self) -> None:
-        """Load any active firing (and its latest sample) into the caches."""
+        """Load any active firing, its latest sample, and its active pizza."""
         row = self._conn.execute(
             "SELECT * FROM firing WHERE status='active' ORDER BY id DESC LIMIT 1"
         ).fetchone()
@@ -58,6 +72,12 @@ class Store:
         ).fetchone()
         if srow is not None:
             self._latest_sample = Sample(t=srow["t"], temp_f=srow["temp_f"])
+        prow = self._conn.execute(
+            "SELECT * FROM pizza WHERE firing_id=? AND ended_at IS NULL ORDER BY seq DESC LIMIT 1",
+            (self._firing.id,),
+        ).fetchone()
+        if prow is not None:
+            self._active_pizza = _pizza_from_row(prow)
 
     # ---- state accessors --------------------------------------------------
     def firing(self) -> Firing | None:
@@ -68,6 +88,10 @@ class Store:
         with self._lock:
             return self._latest_sample
 
+    def active_pizza(self) -> Pizza | None:
+        with self._lock:
+            return self._active_pizza
+
     def samples(self, firing_id: int) -> list[Sample]:
         """The full sample series for a firing, oldest first."""
         with self._lock:
@@ -76,6 +100,15 @@ class Store:
                 (firing_id,),
             ).fetchall()
         return [Sample(t=r["t"], temp_f=r["temp_f"]) for r in rows]
+
+    def pizzas(self, firing_id: int) -> list[Pizza]:
+        """All pizzas for a firing, in seq order."""
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT * FROM pizza WHERE firing_id=? ORDER BY seq",
+                (firing_id,),
+            ).fetchall()
+        return [_pizza_from_row(r) for r in rows]
 
     # ---- mutators ---------------------------------------------------------
     def start_firing(self) -> Firing:
@@ -98,6 +131,7 @@ class Store:
             )
             self._firing = firing
             self._latest_sample = None
+            self._active_pizza = None
             event: dict[str, Any] = {
                 "type": "firing_started",
                 "firing": firing.model_dump(mode="json"),
@@ -106,9 +140,13 @@ class Store:
         return firing
 
     def stop_firing(self) -> Firing | None:
+        events: list[dict[str, Any]] = []
         with self._lock:
             if self._firing is None:
                 return None
+            ended_pizza = self._end_active_pizza_locked()
+            if ended_pizza is not None:
+                events.append({"type": "pizza_ended", "pizza": ended_pizza.model_dump(mode="json")})
             ended_at = self._clock.now().isoformat()
             self._conn.execute(
                 "UPDATE firing SET ended_at=?, status='ended' WHERE id=?",
@@ -121,8 +159,9 @@ class Store:
             firing_id = ended.id
             self._firing = None
             self._latest_sample = None
-            event: dict[str, Any] = {"type": "firing_ended", "firing_id": firing_id}
-        self._broadcast(event)
+            events.append({"type": "firing_ended", "firing_id": firing_id})
+        for ev in events:
+            self._broadcast(ev)
         return ended
 
     def publish_sample(self, *, temp_f: float) -> None:
@@ -144,6 +183,69 @@ class Store:
                 "temp_f": temp_f,
             }
         self._broadcast(event)
+
+    def _end_active_pizza_locked(self) -> Pizza | None:
+        """Caller must hold self._lock. Returns the ended pizza, or None."""
+        if self._active_pizza is None:
+            return None
+        ended_at = self._clock.now().isoformat()
+        self._conn.execute(
+            "UPDATE pizza SET ended_at=? WHERE id=?",
+            (ended_at, self._active_pizza.id),
+        )
+        self._conn.commit()
+        ended = self._active_pizza.model_copy(update={"ended_at": self._clock.now()})
+        self._active_pizza = None
+        return ended
+
+    def end_active_pizza(self) -> Pizza | None:
+        with self._lock:
+            ended = self._end_active_pizza_locked()
+            if ended is None:
+                return None
+            event: dict[str, Any] = {
+                "type": "pizza_ended",
+                "pizza": ended.model_dump(mode="json"),
+            }
+        self._broadcast(event)
+        return ended
+
+    def next_pizza(self, *, name: str) -> Pizza | None:
+        """End any active pizza, then start a new one with `name`. Returns
+        the new pizza, or None if no firing is active."""
+        events: list[dict[str, Any]] = []
+        with self._lock:
+            if self._firing is None:
+                return None
+            ended = self._end_active_pizza_locked()
+            if ended is not None:
+                events.append({"type": "pizza_ended", "pizza": ended.model_dump(mode="json")})
+            row = self._conn.execute(
+                "SELECT COALESCE(MAX(seq), 0) AS s FROM pizza WHERE firing_id=?",
+                (self._firing.id,),
+            ).fetchone()
+            seq = row["s"] + 1
+            started_at = self._clock.now().isoformat()
+            cur = self._conn.execute(
+                "INSERT INTO pizza (firing_id, seq, name, started_at, ended_at) VALUES (?, ?, ?, ?, NULL)",
+                (self._firing.id, seq, name, started_at),
+            )
+            self._conn.commit()
+            pizza = Pizza.model_validate(
+                {
+                    "id": cur.lastrowid,
+                    "firing_id": self._firing.id,
+                    "seq": seq,
+                    "name": name,
+                    "started_at": started_at,
+                    "ended_at": None,
+                }
+            )
+            self._active_pizza = pizza
+            events.append({"type": "pizza_started", "pizza": pizza.model_dump(mode="json")})
+        for ev in events:
+            self._broadcast(ev)
+        return pizza
 
     # ---- pub/sub ----------------------------------------------------------
     def subscribe(self) -> queue.Queue[dict[str, Any]]:
