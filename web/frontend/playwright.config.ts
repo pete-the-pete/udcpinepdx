@@ -31,7 +31,10 @@ export default defineConfig({
       url: "http://127.0.0.1:5001/api/state",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
-      env: { UDCPINE_BOOTSTRAP_TOKEN: "e2e-bootstrap-token" },
+      env: {
+        UDCPINE_BOOTSTRAP_TOKEN: "e2e-bootstrap-token",
+        UDCPINE_DB_PATH: ":memory:",
+      },
     },
     {
       command: "bun run dev",

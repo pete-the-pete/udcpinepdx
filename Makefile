@@ -4,7 +4,7 @@ include shared/Makefile.include
 include web/backend/Makefile.include
 include web/frontend/Makefile.include
 
-.PHONY: help build codegen test lint dev e2e
+.PHONY: help build codegen test lint dev e2e db-reset
 
 help:
 	@echo "Available targets:"
@@ -14,6 +14,7 @@ help:
 	@echo "  lint      run all linters"
 	@echo "  dev       run Flask + Vite together (Ctrl-C stops both)"
 	@echo "  e2e       run Playwright end-to-end tests (boots both servers)"
+	@echo "  db-reset  delete the local dev SQLite database"
 
 build:
 	bun install
@@ -31,3 +32,5 @@ dev:
 	@$(MAKE) -j2 web-backend-run web-frontend-dev
 
 e2e: web-frontend-e2e
+
+db-reset: web-backend-db-reset

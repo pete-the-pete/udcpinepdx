@@ -1,6 +1,6 @@
 WEB_BACKEND_DIR := web/backend
 
-.PHONY: web-backend-install web-backend-test web-backend-lint web-backend-run
+.PHONY: web-backend-install web-backend-test web-backend-lint web-backend-run web-backend-db-reset
 
 web-backend-install:
 	cd $(WEB_BACKEND_DIR) && uv sync
@@ -13,3 +13,7 @@ web-backend-lint:
 
 web-backend-run:
 	cd $(WEB_BACKEND_DIR) && uv run flask --app udcpine_backend.app:create_app run --debug --port 5001
+
+web-backend-db-reset:
+	rm -f $(WEB_BACKEND_DIR)/udcpine.db $(WEB_BACKEND_DIR)/udcpine.db-wal $(WEB_BACKEND_DIR)/udcpine.db-shm
+	@echo "local dev database wiped"
