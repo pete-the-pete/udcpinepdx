@@ -88,6 +88,30 @@ body { min-height: 100dvh; }
   gap: 18px;
   text-align: center;
 }
+.idle__form {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  width: min(520px, 90vw);
+}
+.idle__name {
+  appearance: none;
+  width: 100%;
+  background: var(--bg-2);
+  color: var(--ink);
+  border: 1px solid var(--bg-3);
+  border-radius: 999px;
+  padding: 18px 28px;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: 1px;
+  text-align: center;
+  transition: border-color 120ms ease;
+}
+.idle__name::placeholder { color: var(--ink-soft); letter-spacing: 2px; }
+.idle__name:focus { outline: none; border-color: var(--signal); }
+.idle__name:disabled { opacity: 0.6; }
 .idle__start {
   appearance: none;
   background: var(--signal);
@@ -101,11 +125,15 @@ body { min-height: 100dvh; }
   letter-spacing: 6px;
   cursor: pointer;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 30px 80px rgba(255,106,26,0.35);
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
 }
 .idle__start:hover:not(:disabled) { transform: translateY(-2px); }
 .idle__start:active:not(:disabled) { transform: translateY(1px); }
-.idle__start:disabled { opacity: 0.6; cursor: progress; }
+.idle__start:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+}
 .idle__caption { color: var(--ink-soft); font-size: 14px; letter-spacing: 4px; }
 .idle__error { color: var(--signal); font-size: 13px; }
 
@@ -295,6 +323,11 @@ body { min-height: 100dvh; }
 
   /* Idle screen: the kiosk button is 42px text + 56px padding — far too
      wide for ~390px. Scale it down to a comfortable phone tap target. */
+  .idle__form { gap: 14px; }
+  .idle__name {
+    padding: 14px 20px;
+    font-size: 18px;
+  }
   .idle__start {
     padding: 22px 36px;
     font-size: 28px;

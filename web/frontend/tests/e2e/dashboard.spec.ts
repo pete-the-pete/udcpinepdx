@@ -17,12 +17,19 @@ test("pair → start → live temp climbs → stop → idle", async ({ page }) =
   // --- idle --------------------------------------------------------------
   const startButton = page.getByRole("button", { name: "START FIRING" });
   await expect(startButton).toBeVisible();
+  // The first pizza name is required; START is disabled until one is typed.
+  await expect(startButton).toBeDisabled();
 
   // --- start -------------------------------------------------------------
+  const nameInput = page.getByRole("textbox", { name: "first pizza name" });
+  await nameInput.fill("Margherita");
+  await expect(startButton).toBeEnabled();
   await startButton.click();
   await expect(page.getByText(/FIRING #\d+ · ACTIVE/)).toBeVisible();
   const stopButton = page.getByRole("button", { name: "stop firing" });
   await expect(stopButton).toBeVisible();
+  // The first pizza name flowed into state 2 — the card shows it.
+  await expect(page.locator(".pizza-card__name")).toHaveText("Margherita");
 
   // --- live temperature climbs ------------------------------------------
   await expect
