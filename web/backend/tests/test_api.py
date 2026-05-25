@@ -20,8 +20,8 @@ BOOTSTRAP = "test-bootstrap-secret"
 
 
 @pytest.fixture()
-def store() -> Store:
-    return Store()
+def store(tmp_path) -> Store:
+    return Store(str(tmp_path / "api.db"))
 
 
 @pytest.fixture()

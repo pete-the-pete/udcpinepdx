@@ -42,7 +42,8 @@ def _lan_ip() -> str:
 
 def create_app(store: Store | None = None, auth: AuthStore | None = None) -> Flask:
     app = Flask(__name__)
-    s = store if store is not None else Store()
+    db_path = os.environ.get("UDCPINE_DB_PATH", "udcpine.db")
+    s = store if store is not None else Store(db_path)
 
     if auth is None:
         bootstrap = os.environ.get("UDCPINE_BOOTSTRAP_TOKEN") or secrets.token_urlsafe(16)
