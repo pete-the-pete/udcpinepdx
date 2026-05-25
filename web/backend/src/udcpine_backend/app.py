@@ -12,7 +12,7 @@ import secrets
 import socket
 
 from flask import Flask, Response, request
-from generated.pydantic import ExchangeRequest, LiveState
+from generated.pydantic import ExchangeRequest, LiveState, PizzaNextRequest
 from pydantic import ValidationError
 
 from .auth_store import AuthStore
@@ -88,7 +88,8 @@ def create_app(store: Store | None = None, auth: AuthStore | None = None) -> Fla
     def get_state() -> Response:
         firing = s.firing()
         sample = s.latest_sample()
-        state = LiveState(firing=firing, latest_sample=sample, active_pizza=None)
+        pizza = s.active_pizza()
+        state = LiveState(firing=firing, latest_sample=sample, active_pizza=pizza)
         return Response(state.model_dump_json(), mimetype="application/json")
 
     @app.post("/api/firing/start")
@@ -102,6 +103,21 @@ def create_app(store: Store | None = None, auth: AuthStore | None = None) -> Fla
         if ended is None:
             return Response('{"error":"no active firing"}', mimetype="application/json"), 409
         return Response(ended.model_dump_json(), mimetype="application/json")
+
+    @app.post("/api/pizza/next")
+    def post_pizza_next() -> tuple[Response, int] | Response:
+        try:
+            body = PizzaNextRequest.model_validate(request.get_json(silent=True) or {})
+        except ValidationError as e:
+            return Response(
+                json.dumps({"error": e.errors(include_url=False)}),
+                status=400,
+                mimetype="application/json",
+            )
+        pizza = s.next_pizza(name=body.name)
+        if pizza is None:
+            return Response('{"error":"no active firing"}', status=409, mimetype="application/json")
+        return Response(pizza.model_dump_json(), mimetype="application/json")
 
     @app.get("/api/stream")
     def get_stream() -> Response:
