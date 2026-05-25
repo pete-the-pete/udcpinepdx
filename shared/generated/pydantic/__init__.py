@@ -45,10 +45,11 @@ class Pizza(BaseModel):
         extra="forbid",
     )
     id: conint(ge=0)
+    firing_id: conint(ge=0)
     seq: PositiveInt
     name: constr(min_length=1)
     started_at: AwareDatetime
-    target_seconds: PositiveInt
+    ended_at: AwareDatetime | None
 
 
 class LiveState(BaseModel):
@@ -85,8 +86,26 @@ class LiveEvent3(BaseModel):
     firing_id: conint(ge=0)
 
 
-class LiveEvent(RootModel[LiveEvent1 | LiveEvent2 | LiveEvent3]):
-    root: LiveEvent1 | LiveEvent2 | LiveEvent3
+class LiveEvent4(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    type: Literal["pizza_started"]
+    pizza: Pizza
+
+
+class LiveEvent5(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    type: Literal["pizza_ended"]
+    pizza: Pizza
+
+
+class LiveEvent(
+    RootModel[LiveEvent1 | LiveEvent2 | LiveEvent3 | LiveEvent4 | LiveEvent5]
+):
+    root: LiveEvent1 | LiveEvent2 | LiveEvent3 | LiveEvent4 | LiveEvent5
 
 
 class StartFiringRequest(BaseModel):
@@ -114,3 +133,10 @@ class PairingToken(BaseModel):
     )
     token: constr(min_length=1)
     lan_ip: constr(min_length=1)
+
+
+class PizzaNextRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    name: constr(min_length=1)

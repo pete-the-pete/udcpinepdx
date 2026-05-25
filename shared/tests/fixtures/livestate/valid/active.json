@@ -11,9 +11,10 @@
   },
   "active_pizza": {
     "id": 3,
+    "firing_id": 42,
     "seq": 3,
     "name": "Margherita",
     "started_at": "2026-04-28T19:46:18-07:00",
-    "target_seconds": 150
+    "ended_at": null
   }
 }

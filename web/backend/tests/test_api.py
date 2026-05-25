@@ -159,3 +159,41 @@ def test_paired_device_can_mint_and_a_phone_can_exchange(paired_client) -> None:
     assert phone.get("/api/state").status_code == 401
     assert phone.post("/api/auth/exchange", json={"token": token}).status_code == 200
     assert phone.get("/api/state").status_code == 200
+
+
+def test_pizza_next_without_firing_is_409(paired_client) -> None:
+    res = paired_client.post("/api/pizza/next", json={"name": "Margherita"})
+    assert res.status_code == 409
+
+
+def test_pizza_next_starts_a_pizza(paired_client) -> None:
+    paired_client.post("/api/firing/start")
+    res = paired_client.post("/api/pizza/next", json={"name": "Margherita"})
+    assert res.status_code == 200
+    body = json.loads(res.data)
+    assert body["name"] == "Margherita"
+    assert body["seq"] == 1
+    assert body["ended_at"] is None
+
+
+def test_pizza_next_rejects_empty_name(paired_client) -> None:
+    paired_client.post("/api/firing/start")
+    res = paired_client.post("/api/pizza/next", json={"name": ""})
+    assert res.status_code == 400
+
+
+def test_state_reflects_active_pizza(paired_client) -> None:
+    paired_client.post("/api/firing/start")
+    paired_client.post("/api/pizza/next", json={"name": "Margherita"})
+    state = LiveState.model_validate(json.loads(paired_client.get("/api/state").data))
+    assert state.active_pizza is not None
+    assert state.active_pizza.name == "Margherita"
+
+
+def test_stop_firing_clears_active_pizza_in_state(paired_client) -> None:
+    paired_client.post("/api/firing/start")
+    paired_client.post("/api/pizza/next", json={"name": "Margherita"})
+    paired_client.post("/api/firing/stop")
+    state = LiveState.model_validate(json.loads(paired_client.get("/api/state").data))
+    assert state.firing is None
+    assert state.active_pizza is None

@@ -88,6 +88,30 @@ body { min-height: 100dvh; }
   gap: 18px;
   text-align: center;
 }
+.idle__form {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  width: min(520px, 90vw);
+}
+.idle__name {
+  appearance: none;
+  width: 100%;
+  background: var(--bg-2);
+  color: var(--ink);
+  border: 1px solid var(--bg-3);
+  border-radius: 999px;
+  padding: 18px 28px;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: 1px;
+  text-align: center;
+  transition: border-color 120ms ease;
+}
+.idle__name::placeholder { color: var(--ink-soft); letter-spacing: 2px; }
+.idle__name:focus { outline: none; border-color: var(--signal); }
+.idle__name:disabled { opacity: 0.6; }
 .idle__start {
   appearance: none;
   background: var(--signal);
@@ -101,11 +125,15 @@ body { min-height: 100dvh; }
   letter-spacing: 6px;
   cursor: pointer;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 30px 80px rgba(255,106,26,0.35);
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
 }
 .idle__start:hover:not(:disabled) { transform: translateY(-2px); }
 .idle__start:active:not(:disabled) { transform: translateY(1px); }
-.idle__start:disabled { opacity: 0.6; cursor: progress; }
+.idle__start:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+}
 .idle__caption { color: var(--ink-soft); font-size: 14px; letter-spacing: 4px; }
 .idle__error { color: var(--signal); font-size: 13px; }
 
@@ -130,6 +158,95 @@ body { min-height: 100dvh; }
   color: var(--bg);
 }
 .hero__stop:disabled { opacity: 0.6; cursor: progress; }
+
+/* Pizza bar — sits at the bottom of HeroNumber, above the ember. */
+.hero__pizza-bar {
+  position: relative; z-index: 1;
+  margin-bottom: 30px;
+  display: grid;
+  gap: 12px;
+}
+
+/* State 2: read mode — card with name + elapsed + NEXT PIZZA button. */
+.pizza-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: baseline;
+  gap: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--bg-3);
+  border-radius: 12px;
+  padding: 16px 22px;
+}
+.pizza-card__label {
+  font-size: 11px; letter-spacing: 3px; color: var(--ink-soft);
+  text-transform: uppercase;
+}
+.pizza-card__name { font-size: 22px; font-weight: 600; color: var(--ink); }
+.pizza-card__elapsed {
+  font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.pizza-card__next {
+  appearance: none;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid var(--bg-3);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: inherit; font-size: 11px;
+  letter-spacing: 2px; cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.pizza-card__next:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+/* State 3: small "now baking" context label shown above the form. */
+.pizza-current {
+  font-size: 13px; color: var(--ink-soft);
+  padding: 0 4px;
+}
+.pizza-current b { color: var(--ink); font-weight: 600; }
+
+/* State 1 and 3: the form. */
+.pizza-form {
+  display: flex; gap: 8px; align-items: center;
+}
+.pizza-form__input {
+  appearance: none;
+  background: var(--bg-2);
+  color: var(--ink);
+  border: 1px solid var(--bg-3);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-family: inherit; font-size: 14px;
+  flex: 1;
+  min-width: 0;
+}
+.pizza-form__input:focus {
+  outline: none;
+  border-color: var(--signal);
+}
+.pizza-form__submit {
+  appearance: none;
+  background: var(--signal);
+  color: var(--bg);
+  border: 0; border-radius: 999px;
+  padding: 10px 18px;
+  font-family: inherit; font-weight: 700; font-size: 12px;
+  letter-spacing: 3px; cursor: pointer;
+}
+.pizza-form__submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.pizza-form__cancel {
+  appearance: none;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 0;
+  padding: 6px 10px;
+  font-family: inherit; font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.pizza-form__cancel:hover { color: var(--ink); }
 
 /* Pair screen (unauthenticated) */
 .pair {
@@ -206,6 +323,11 @@ body { min-height: 100dvh; }
 
   /* Idle screen: the kiosk button is 42px text + 56px padding — far too
      wide for ~390px. Scale it down to a comfortable phone tap target. */
+  .idle__form { gap: 14px; }
+  .idle__name {
+    padding: 14px 20px;
+    font-size: 18px;
+  }
   .idle__start {
     padding: 22px 36px;
     font-size: 28px;
@@ -241,4 +363,21 @@ body { min-height: 100dvh; }
   .overlay__card { padding: 24px; }
   .overlay__qr { width: 260px; height: 260px; }
   .pair__title { font-size: 30px; }
+
+  /* Pizza card reflows: name on its own row, elapsed + next stack below. */
+  .pizza-card {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "label    elapsed"
+      "name     name"
+      "next     next";
+    row-gap: 8px;
+  }
+  .pizza-card__label   { grid-area: label; }
+  .pizza-card__elapsed { grid-area: elapsed; text-align: right; }
+  .pizza-card__name    { grid-area: name; }
+  .pizza-card__next    { grid-area: next; justify-self: start; }
+
+  .pizza-form { flex-wrap: wrap; }
+  .pizza-form__input { width: 100%; }
 }

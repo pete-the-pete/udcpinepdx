@@ -15,6 +15,7 @@ from generated.pydantic import (
     LiveState,
     PairingToken,
     Pizza,
+    PizzaNextRequest,
     Sample,
 )
 
@@ -29,6 +30,7 @@ MODELS = {
     "liveevent": LiveEvent,
     "exchangerequest": ExchangeRequest,
     "pairingtoken": PairingToken,
+    "pizzanextrequest": PizzaNextRequest,
 }
 
 

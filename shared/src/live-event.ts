@@ -1,13 +1,10 @@
 import { z } from "zod";
 import { FiringSchema } from "./firing.ts";
+import { PizzaSchema } from "./pizza.ts";
 
 /**
  * Payload of one SSE message on /api/stream. Discriminated by `type`.
  * The frontend uses a discriminated-union switch to narrow each variant.
- *
- * `pizza_started` and `pizza_ended` are deliberately NOT in this union yet —
- * they land in a future plan. Add them here when pizza state ships, not
- * before, to keep the surface honest.
  */
 export const LiveEventSchema = z.discriminatedUnion("type", [
   z.object({
@@ -23,8 +20,15 @@ export const LiveEventSchema = z.discriminatedUnion("type", [
     type: z.literal("firing_ended"),
     firing_id: z.number().int().nonnegative(),
   }),
+  z.object({
+    type: z.literal("pizza_started"),
+    pizza: PizzaSchema,
+  }),
+  z.object({
+    type: z.literal("pizza_ended"),
+    pizza: PizzaSchema,
+  }),
 ]);
 
 export type LiveEvent = z.infer<typeof LiveEventSchema>;
-
 export type SampleEvent = Extract<LiveEvent, { type: "sample" }>;

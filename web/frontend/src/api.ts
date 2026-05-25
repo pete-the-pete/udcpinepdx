@@ -2,9 +2,11 @@ import {
   FiringSchema,
   LiveStateSchema,
   PairingTokenSchema,
+  PizzaSchema,
   type Firing,
   type LiveState,
   type PairingToken,
+  type Pizza,
 } from "@udcpine/shared";
 
 /** Thrown when a request comes back 401 — the device is not paired. */
@@ -73,6 +75,21 @@ export async function mintPairingToken(): Promise<PairingToken> {
   const parsed = PairingTokenSchema.safeParse(await res.json());
   if (!parsed.success) {
     throw new Error(`/api/auth/pairing contract violation: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
+export async function nextPizza(name: string): Promise<Pizza> {
+  const res = await fetch("/api/pizza/next", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (res.status === 401) throw new UnauthorizedError();
+  if (!res.ok) throw new Error(`/api/pizza/next returned ${res.status}`);
+  const parsed = PizzaSchema.safeParse(await res.json());
+  if (!parsed.success) {
+    throw new Error(`/api/pizza/next contract violation: ${parsed.error.message}`);
   }
   return parsed.data;
 }
