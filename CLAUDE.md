@@ -99,6 +99,14 @@ appeared on the board after opening the issue/PR.
 If the workflow fails (e.g. expired PAT), fix the underlying issue.
 Don't paper over it with manual `gh project item-add` calls.
 
+**PRs that execute a tracked issue must include `Closes #N` (or
+`Fixes #N` / `Resolves #N`) in the PR body.** That's what populates
+the board's "Linked pull requests" column, auto-closes the issue on
+merge, and gives board → issue → PR → commit traceability. If a PR
+isn't executing a specific tracked issue (e.g. drive-by fix), no
+linkage is needed — but the moment work is ticket-scoped, the linkage
+is mandatory.
+
 ## Safety rails
 
 - **No code without an approved plan.** If a request would add or change
