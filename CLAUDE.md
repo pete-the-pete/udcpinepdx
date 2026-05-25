@@ -87,6 +87,18 @@ Skip the default and stop to ask when:
 - The branch contains anything destructive or out-of-scope that the user
   hasn't seen.
 
+## GitHub Projects
+
+Every issue and PR in this repo belongs on project board
+`pete-the-pete/projects/4`. The `.github/workflows/add-to-project.yml`
+workflow auto-adds new issues and PRs and sets initial Status (issues
+→ Todo, PRs → In Progress). Do not add items manually with
+`gh project item-add` — let the workflow do it, and confirm the item
+appeared on the board after opening the issue/PR.
+
+If the workflow fails (e.g. expired PAT), fix the underlying issue.
+Don't paper over it with manual `gh project item-add` calls.
+
 ## Safety rails
 
 - **No code without an approved plan.** If a request would add or change

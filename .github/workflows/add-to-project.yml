@@ -1,0 +1,56 @@
+name: Add to project
+
+on:
+  issues:
+    types: [opened, reopened]
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+
+permissions: {}
+
+jobs:
+  add-to-project:
+    name: Add and set status
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Add issue or PR to project 4
+        id: add
+        uses: actions/add-to-project@5afcf98fcd03f1c2f92c3c83f58ae24323cc57fd  # v2.0.0
+        with:
+          project-url: https://github.com/users/pete-the-pete/projects/4
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+
+      - name: Set Status field
+        env:
+          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          ITEM_ID: ${{ steps.add.outputs.itemId }}
+          IS_PR: ${{ github.event_name == 'pull_request_target' }}
+        run: |
+          set -euo pipefail
+          PROJECT_ID="$(gh api graphql -f query='
+            query($login: String!, $number: Int!) {
+              user(login: $login) { projectV2(number: $number) { id } }
+            }' -F login=pete-the-pete -F number=4 \
+            --jq '.data.user.projectV2.id')"
+
+          STATUS_FIELD_ID="PVTSSF_lAHOAAVHgc4BUmcOzhBtgJA"
+          if [ "$IS_PR" = "true" ]; then
+            OPTION_ID="47fc9ee4"   # In Progress
+          else
+            OPTION_ID="f75ad846"   # Todo
+          fi
+
+          gh api graphql -f query='
+            mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId: $item
+                fieldId: $field
+                value: { singleSelectOptionId: $option }
+              }) { projectV2Item { id } }
+            }' \
+            -F project="$PROJECT_ID" \
+            -F item="$ITEM_ID" \
+            -F field="$STATUS_FIELD_ID" \
+            -F option="$OPTION_ID"
