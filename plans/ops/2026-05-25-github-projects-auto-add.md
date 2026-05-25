@@ -31,7 +31,7 @@ Projects v2 GraphQL API, Actions secrets, workflow auth)**.
 
 - **Auth:** Fine-grained PAT, stored as a repo secret
   `ADD_TO_PROJECT_PAT`. Scope: read+write on Pete's user-owned project
-  4 only; no repo scopes. Token expiry: 1 year, rotation tracked as a
+  4 only; no repo scopes. Token expiry: 90 days, rotation tracked as a
   GitHub issue at creation time.
 - **Initial Status field:**
   - New **issues** → `Todo`
@@ -51,21 +51,33 @@ Claude cannot create PATs or write to `gh secret set` for a user-scoped
 PAT without the token in hand. Pete does this once; the plan documents
 the exact steps so it's reproducible.
 
-### A1. Create the fine-grained PAT
+> **Why classic, not fine-grained.** We tried fine-grained first. They
+> don't expose a Projects permission for **user-owned** Projects v2
+> boards — Projects only appears under *Organization* permissions, and
+> our board is owned by `pete-the-pete` (a user), not an org. Result:
+> the `actions/add-to-project` action fails with "Resource not
+> accessible by personal access token" no matter how the fine-grained
+> repo permissions are configured. The narrowest token that actually
+> works is a classic PAT with **only** the `project` scope checked.
+> Blast radius if leaked: read/write to all of Pete's project boards,
+> nothing else (no repo, no workflow, no admin, no delete). Acceptable.
 
-1. Go to
-   <https://github.com/settings/personal-access-tokens/new>.
-2. **Token name:** `udcpinepdx — add-to-project`.
-3. **Resource owner:** `pete-the-pete`.
-4. **Expiration:** 1 year from today (2027-05-25).
-5. **Repository access:** *Public repositories (read-only)* —
-   `actions/add-to-project` only needs to read the triggering
-   event; it does not need to write to the repo. The board write
-   happens against the user-level project, not the repo.
-6. **Account permissions → Projects:** **Read and write**.
-7. No other permissions. (Specifically: no repo contents, no issues
-   write, no PR write.)
-8. Generate, copy the token, **do not paste it into chat**.
+### A1. Create the classic PAT
+
+1. Go to <https://github.com/settings/tokens/new>.
+2. **Note:** `udcpinepdx — add-to-project (classic)`.
+3. **Expiration:** 90 days from today (2026-08-23).
+4. **Scopes:** check **only `project`** (auto-expands to `read:project`
+   + `write:project`). Do NOT check `repo`, `workflow`, `gist`, or any
+   other scope. The action does not need repo access — it identifies
+   issues/PRs from the event payload alone.
+5. Generate, copy the token, **do not paste it into chat**.
+
+> **If we ever move project 4 under a GitHub org** (e.g. for multi-user
+> access later), re-do this phase as a fine-grained PAT scoped to that
+> org's Projects: read+write, plus repo Issues/PRs read. Fine-grained
+> is then strictly better. Update this plan + the workflow comment if
+> that migration happens.
 
 ### A2. Store as repo secret
 
@@ -85,19 +97,18 @@ gh secret list --repo pete-the-pete/udcpinepdx --app actions
 
 ### A3. Schedule rotation
 
-Open an issue (Claude can do this in execution):
+Open an issue (Claude does this in execution, post-merge — see Phase D):
 
 ```
-Title:  Rotate ADD_TO_PROJECT_PAT (expires 2027-05-25)
-Labels: ops, security
-Body:   Rotation reminder. Regenerate the fine-grained PAT from
-        plans/ops/2026-05-25-github-projects-auto-add.md and update
-        the ADD_TO_PROJECT_PAT repo secret. Close this issue after
-        rotation.
+Title:  Rotate ADD_TO_PROJECT_PAT (expires 2026-08-23)
+Labels: sub:ops, type:security, type:chore
+Body:   Rotation reminder. Regenerate the classic PAT (scope: project)
+        per plans/ops/2026-05-25-github-projects-auto-add.md and update
+        the ADD_TO_PROJECT_PAT repo secret. Close after rotation.
 ```
 
-Add it to project 4, status `Todo`. (Yes — this is the first item the
-new workflow itself will end up adding.)
+The workflow itself adds this issue to project 4 in Todo — making the
+rotation issue the first end-to-end verification.
 
 ---
 
@@ -256,7 +267,7 @@ not a safety rail itself.
 
 | Risk | Mitigation |
 |---|---|
-| PAT expires silently → workflow starts failing | Rotation issue scheduled in A3; expiry is 2027-05-25 |
+| PAT expires silently → workflow starts failing | Rotation issue scheduled in A3; expiry is 2026-08-23 |
 | PR from a fork can't see the secret | Using `pull_request_target`, which provides secrets for forks. No checkout of PR code, so no code-injection risk. |
 | Field/option IDs change | Plan documents the discovery command. Workflow fails loudly (mutation error) rather than silently mis-categorizing. |
 | Workflow accidentally given repo write | `permissions: {}` at workflow level + PAT scoped only to Projects |
