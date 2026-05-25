@@ -56,13 +56,15 @@
 
 /* `active` — a happy jig: hop onto one foot, down, onto the other, down.
    rotateY needs a perspective; translateY is in % so it scales with the
-   stage in both widget modes. */
+   stage in both widget modes. rotateZ leans the body toward the landing
+   foot — same direction as each hop, so it reads as weight shift, not a
+   forward/back rock. */
 @keyframes chef-jig {
-  0%   { transform: perspective(620px) rotateY(0deg)   translateY(0); }
-  25%  { transform: perspective(620px) rotateY(22deg)  translateY(-13%); }
-  50%  { transform: perspective(620px) rotateY(0deg)   translateY(0); }
-  75%  { transform: perspective(620px) rotateY(-22deg) translateY(-13%); }
-  100% { transform: perspective(620px) rotateY(0deg)   translateY(0); }
+  0%   { transform: perspective(620px) rotateY(0deg)   rotateZ(0deg)   translateY(0); }
+  25%  { transform: perspective(620px) rotateY(22deg)  rotateZ(10deg)  translateY(-13%); }
+  50%  { transform: perspective(620px) rotateY(0deg)   rotateZ(0deg)   translateY(0); }
+  75%  { transform: perspective(620px) rotateY(-22deg) rotateZ(-10deg) translateY(-13%); }
+  100% { transform: perspective(620px) rotateY(0deg)   rotateZ(0deg)   translateY(0); }
 }
 
 /* `hot` — a red glow that pulses around the chef's silhouette. drop-shadow
