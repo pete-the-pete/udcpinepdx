@@ -36,6 +36,7 @@ secrets/
 *.key
 *.p12
 *.pfx
+.playwright-mcp/
 
 # ---- OS ----
 .DS_Store
