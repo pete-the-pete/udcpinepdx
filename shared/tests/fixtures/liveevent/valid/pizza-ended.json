@@ -1,0 +1,11 @@
+{
+  "type": "pizza_ended",
+  "pizza": {
+    "id": 1,
+    "firing_id": 42,
+    "seq": 1,
+    "name": "Margherita",
+    "started_at": "2026-04-28T18:46:18-07:00",
+    "ended_at": "2026-04-28T18:48:36-07:00"
+  }
+}

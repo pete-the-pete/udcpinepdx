@@ -64,6 +64,10 @@
           "type": "integer",
           "minimum": 0
         },
+        "firing_id": {
+          "type": "integer",
+          "minimum": 0
+        },
         "seq": {
           "type": "integer",
           "exclusiveMinimum": 0
@@ -76,17 +80,25 @@
           "type": "string",
           "format": "date-time"
         },
-        "target_seconds": {
-          "type": "integer",
-          "exclusiveMinimum": 0
+        "ended_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
         "id",
+        "firing_id",
         "seq",
         "name",
         "started_at",
-        "target_seconds"
+        "ended_at"
       ],
       "additionalProperties": false
     },
@@ -189,6 +201,40 @@
             "firing_id"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "pizza_started"
+            },
+            "pizza": {
+              "$ref": "#/$defs/Pizza"
+            }
+          },
+          "required": [
+            "type",
+            "pizza"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "pizza_ended"
+            },
+            "pizza": {
+              "$ref": "#/$defs/Pizza"
+            }
+          },
+          "required": [
+            "type",
+            "pizza"
+          ],
+          "additionalProperties": false
         }
       ]
     },
@@ -230,6 +276,19 @@
       "required": [
         "token",
         "lan_ip"
+      ],
+      "additionalProperties": false
+    },
+    "PizzaNextRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "name"
       ],
       "additionalProperties": false
     }
