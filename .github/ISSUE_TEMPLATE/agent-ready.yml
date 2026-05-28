@@ -1,0 +1,47 @@
+name: Agent-ready ticket
+description: A ticket that an autonomous agent (or you) can claim and execute end-to-end.
+title: "<subsystem>: <short verb-phrase>"
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template when the work is fully scoped and the file paths,
+        acceptance criteria, and dependencies are known. Add the `agent-ready`
+        label *after* opening so a runner doesn't pick it up half-spec'd.
+  - type: input
+    id: plan
+    attributes:
+      label: Plan reference
+      description: Repo-relative path to the plan + optional `#anchor` section.
+      placeholder: plans/<sub>/YYYY-MM-DD-<slug>.md#issue-N-title
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Concrete checks the agent runs to know it is done.
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Files to touch
+      description: Create / Modify / Delete with exact paths.
+      placeholder: |
+        - Create: path/to/new.ts
+        - Modify: path/to/existing.ts (function X)
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Other issues that must merge first, or "None".
+      placeholder: "Depends on #N (label `blocked` and reference here)."
+    validations:
+      required: true
