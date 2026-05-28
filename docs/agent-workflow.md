@@ -67,9 +67,14 @@ manual flow has been exercised against several real tickets.
 
 ## Merging
 
-- **Squash only.** The repo has merge-commit and rebase-merge disabled.
-- **Merge queue on `main`.** PRs join the queue rather than fast-forwarding;
-  this serializes integration so two parallel-safe PRs can't desync `main`.
+- **Squash only.** The repo has merge-commit and rebase-merge disabled, so
+  every PR lands as a single squash commit. This already enforces linear
+  history without a separate ruleset rule.
+- **Merge queue:** not enabled. GitHub's merge-queue rule is only available
+  via API on org-owned repos; this is a user-owned repo. With a single
+  active developer, sequencing happens naturally via PR review order. If
+  parallel agent throughput becomes real, revisit by enabling merge queue
+  manually in the repo settings UI (or migrating the repo under an org).
 - **Closes #N is mandatory** for ticket-scoped PRs (already required by
   CLAUDE.md). The board's "Linked pull requests" column relies on it.
 
