@@ -26,6 +26,7 @@ jobs:
           GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
           ITEM_ID: ${{ steps.add.outputs.itemId }}
           IS_PR: ${{ github.event_name == 'pull_request_target' }}
+          HAS_AGENT_READY: ${{ github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'agent-ready') }}
         run: |
           set -euo pipefail
           PROJECT_ID="$(gh api graphql -f query='
@@ -36,9 +37,11 @@ jobs:
 
           STATUS_FIELD_ID="PVTSSF_lAHOAAVHgc4BUmcOzhBtgJA"
           if [ "$IS_PR" = "true" ]; then
-            OPTION_ID="47fc9ee4"   # In Progress
+            OPTION_ID="bcfefaf6"   # In Progress
+          elif [ "$HAS_AGENT_READY" = "true" ]; then
+            OPTION_ID="9f289c57"   # Ready
           else
-            OPTION_ID="f75ad846"   # Todo
+            OPTION_ID="24f8c76e"   # Todo
           fi
 
           gh api graphql -f query='
