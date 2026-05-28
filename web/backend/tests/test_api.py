@@ -197,3 +197,45 @@ def test_stop_firing_clears_active_pizza_in_state(paired_client) -> None:
     state = LiveState.model_validate(json.loads(paired_client.get("/api/state").data))
     assert state.firing is None
     assert state.active_pizza is None
+
+
+# --- Single-origin SPA serving (the built bundle, served by Flask) ---
+
+
+@pytest.fixture()
+def spa_client(store, auth, tmp_path):
+    """A client backed by a fake built frontend bundle on disk."""
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<!doctype html><title>udcpine</title>")
+    (dist / "assets" / "app.js").write_text("console.log('app')")
+    app = create_app(store=store, auth=auth, frontend_dist=dist)
+    app.config.update(TESTING=True)
+    return app.test_client()
+
+
+def test_root_serves_index_html(spa_client) -> None:
+    res = spa_client.get("/")
+    assert res.status_code == 200
+    assert b"udcpine" in res.data
+
+
+def test_real_asset_is_served(spa_client) -> None:
+    res = spa_client.get("/assets/app.js")
+    assert res.status_code == 200
+    assert b"console.log" in res.data
+
+
+def test_unknown_path_falls_back_to_index(spa_client) -> None:
+    # Client-side route the SPA owns — must return the shell, not 404.
+    res = spa_client.get("/history/42")
+    assert res.status_code == 200
+    assert b"udcpine" in res.data
+
+
+def test_unknown_api_path_is_404_not_spa(spa_client) -> None:
+    # Authorized client so we pass the /api gate and reach the catch-all.
+    spa_client.post("/api/auth/exchange", json={"token": BOOTSTRAP})
+    res = spa_client.get("/api/does-not-exist")
+    assert res.status_code == 404
+    assert b"udcpine" not in res.data
