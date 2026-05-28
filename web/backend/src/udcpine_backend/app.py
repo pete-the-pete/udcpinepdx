@@ -10,8 +10,9 @@ import json
 import os
 import secrets
 import socket
+from pathlib import Path
 
-from flask import Flask, Response, request
+from flask import Flask, Response, request, send_from_directory
 from generated.pydantic import ExchangeRequest, LiveState, PizzaNextRequest
 from pydantic import ValidationError
 
@@ -22,6 +23,15 @@ from .store import Store
 SESSION_COOKIE = "udcpine_session"
 # 30 days; HttpOnly + Lax. Not Secure — see plan, HTTP on the LAN.
 _COOKIE_MAX_AGE_S = 60 * 60 * 24 * 30
+
+
+# Built SPA bundle. Present only after `bun run build` in web/frontend; in
+# dev the SPA is served by Vite (:5173) and these routes simply 404.
+def _default_frontend_dist() -> Path:
+    return Path(
+        os.environ.get("UDCPINE_FRONTEND_DIST")
+        or Path(__file__).resolve().parents[3] / "frontend" / "dist"
+    )
 
 
 def _lan_ip() -> str:
@@ -40,18 +50,26 @@ def _lan_ip() -> str:
         s.close()
 
 
-def create_app(store: Store | None = None, auth: AuthStore | None = None) -> Flask:
+def create_app(
+    store: Store | None = None,
+    auth: AuthStore | None = None,
+    frontend_dist: Path | None = None,
+) -> Flask:
     app = Flask(__name__)
+    dist = frontend_dist if frontend_dist is not None else _default_frontend_dist()
     db_path = os.environ.get("UDCPINE_DB_PATH", "udcpine.db")
     s = store if store is not None else Store(db_path)
 
     if auth is None:
         bootstrap = os.environ.get("UDCPINE_BOOTSTRAP_TOKEN") or secrets.token_urlsafe(16)
         auth = AuthStore(bootstrap_token=bootstrap)
-        # The console is the root of trust: whoever sees this line can pair
-        # the first device. 5173 is the Vite dev port the phone/laptop hit.
+        # The console is the root of trust: whoever sees this line can pair a
+        # device. The bootstrap token is reusable, so this same URL is the
+        # pre-approved kiosk link — set UDCPINE_BOOTSTRAP_TOKEN to a short,
+        # typeable value and bookmark it on the Pi's browser.
         print(
-            f"\n  🔑  Pair this device:  http://localhost:5173/?t={bootstrap}\n",
+            f"\n  🔑  Pair a device:  http://{_lan_ip()}:5001/?t={bootstrap}\n"
+            "      (port matches `flask run --port`; bookmark this on the Pi)\n",
             flush=True,
         )
 
@@ -166,5 +184,23 @@ def create_app(store: Store | None = None, auth: AuthStore | None = None) -> Fla
             json.dumps({"token": token, "lan_ip": _lan_ip()}),
             mimetype="application/json",
         )
+
+    # Single-origin SPA serving. With a built bundle present, Flask serves the
+    # frontend on the same origin as /api/*, so the session cookie attaches
+    # automatically and there is no CORS. In dev these 404 (Vite serves :5173).
+    @app.get("/")
+    def index() -> Response:
+        return send_from_directory(dist, "index.html")
+
+    @app.get("/<path:path>")
+    def spa(path: str) -> Response | tuple[Response, int]:
+        # Unknown /api/* paths are real 404s, not the SPA shell.
+        if path.startswith("api/"):
+            return Response('{"error":"not found"}', status=404, mimetype="application/json")
+        # Serve a real asset (hashed JS/CSS, favicon) if it exists; otherwise
+        # fall back to index.html so client-side routes resolve.
+        if (dist / path).is_file():
+            return send_from_directory(dist, path)
+        return send_from_directory(dist, "index.html")
 
     return app

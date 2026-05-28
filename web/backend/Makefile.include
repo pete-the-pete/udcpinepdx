@@ -1,6 +1,6 @@
 WEB_BACKEND_DIR := web/backend
 
-.PHONY: web-backend-install web-backend-test web-backend-lint web-backend-run web-backend-db-reset
+.PHONY: web-backend-install web-backend-test web-backend-lint web-backend-run web-backend-serve web-backend-db-reset
 
 web-backend-install:
 	cd $(WEB_BACKEND_DIR) && uv sync
@@ -13,6 +13,12 @@ web-backend-lint:
 
 web-backend-run:
 	cd $(WEB_BACKEND_DIR) && uv run flask --app udcpine_backend.app:create_app run --debug --port 5001
+
+# LAN-facing single-origin mode: bound to 0.0.0.0, no debugger, serves the
+# built SPA from web/frontend/dist. Set UDCPINE_BOOTSTRAP_TOKEN to a short,
+# typeable value so the printed kiosk URL is easy to enter on the Pi.
+web-backend-serve:
+	cd $(WEB_BACKEND_DIR) && uv run flask --app udcpine_backend.app:create_app run --host=0.0.0.0 --port 5001
 
 web-backend-db-reset:
 	rm -f $(WEB_BACKEND_DIR)/udcpine.db $(WEB_BACKEND_DIR)/udcpine.db-wal $(WEB_BACKEND_DIR)/udcpine.db-shm
