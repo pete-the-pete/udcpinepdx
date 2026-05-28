@@ -107,6 +107,13 @@ isn't executing a specific tracked issue (e.g. drive-by fix), no
 linkage is needed — but the moment work is ticket-scoped, the linkage
 is mandatory.
 
+### Agent-ready tickets
+
+This repo uses Pattern B for breaking plans into agent-claimable tickets.
+The conventions (label semantics, claim rule, status lanes, manual agent
+launch for v1) live in `docs/agent-workflow.md`. New tickets meant for
+an agent must use the `agent-ready` issue template.
+
 ## Safety rails
 
 - **No code without an approved plan.** If a request would add or change
