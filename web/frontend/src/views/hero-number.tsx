@@ -2,6 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import type { Firing, LiveState } from "@udcpine/shared";
 import { endFiring, nextPizza } from "../api";
 import { isSampleStale } from "../reduce";
+import { ChefWidget } from "../chef/ChefWidget";
 import { PairPhoneOverlay } from "./pair-phone-overlay";
 
 // Wire unit is Celsius; the dashboard renders Fahrenheit for the operator.
@@ -143,6 +144,9 @@ export function HeroNumber({ state, onEnded }: HeroNumberProps) {
         {latest_sample === null && <div class="hero__delta">awaiting sensor data</div>}
         {stale && <div class="hero__delta hero__delta--stale">sensor stale</div>}
       </section>
+
+      <ChefWidget latest_sample={latest_sample} />
+
 
       <footer class="hero__pizza-bar">
         {active_pizza !== null && !composing && (
