@@ -8,43 +8,43 @@
       "frames": 1,
       "fps": null,
       "css_animation": "shiver",
-      "temp_f": [
+      "temp_c": [
         null,
-        250
+        120
       ]
     },
     "thawing": {
       "frames": 1,
       "fps": 6,
-      "temp_f": [
-        250,
-        350
+      "temp_c": [
+        120,
+        180
       ]
     },
     "active": {
       "frames": 1,
       "fps": 8,
       "css_animation": "jig",
-      "temp_f": [
-        350,
-        450
+      "temp_c": [
+        180,
+        230
       ]
     },
     "hot": {
       "frames": 1,
       "fps": 10,
       "css_animation": "heat",
-      "temp_f": [
-        450,
-        550
+      "temp_c": [
+        230,
+        290
       ]
     },
     "very_hot": {
       "frames": 1,
       "fps": 12,
       "css_animation": "transcendence",
-      "temp_f": [
-        550,
+      "temp_c": [
+        290,
         null
       ]
     }

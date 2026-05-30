@@ -56,6 +56,18 @@ body { min-height: 100dvh; }
 .hero__unit { color: var(--signal-soft); font-size: 22px; letter-spacing: 6px; margin-top: 12px; }
 .hero__delta { color: var(--ink-soft); font-size: 14px; margin-top: 16px; }
 
+/* Stale-sample indicator: a deliberate fade on the hero number plus a
+   short "sensor stale" caption. Subtle by design — a wedged Pi should be
+   noticed without screaming for attention. */
+.hero__readout--stale .hero__num { opacity: 0.55; }
+.hero__delta--stale {
+  color: var(--warn, #b88a3a);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
 .hero__pizza {
   position: relative; z-index: 1;
   margin-bottom: 30px;

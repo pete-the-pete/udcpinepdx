@@ -1,7 +1,13 @@
 import { useEffect, useState } from "preact/hooks";
 import type { Firing, LiveState } from "@udcpine/shared";
 import { endFiring, nextPizza } from "../api";
+import { isSampleStale } from "../reduce";
 import { PairPhoneOverlay } from "./pair-phone-overlay";
+
+// Wire unit is Celsius; the dashboard renders Fahrenheit for the operator.
+function celsiusToFahrenheit(tempC: number): number {
+  return tempC * 9 / 5 + 32;
+}
 
 interface HeroNumberProps {
   state: LiveState & { firing: Firing };
@@ -56,7 +62,12 @@ export function HeroNumber({ state, onEnded }: HeroNumberProps) {
 
   const firingElapsed = formatHMS(now - Date.parse(firing.started_at));
   const tempLabel =
-    latest_sample !== null ? Math.round(latest_sample.temp_f).toString() : "—";
+    latest_sample !== null
+      ? Math.round(celsiusToFahrenheit(latest_sample.temp_c)).toString()
+      : "—";
+  // Stale = no fresh sample in the last 10 s. A wedged Pi looks identical
+  // to an idle oven without this — the indicator makes silence visible.
+  const stale = isSampleStale(latest_sample, now);
   const pizzaElapsed =
     active_pizza !== null
       ? formatMS(now - Date.parse(active_pizza.started_at))
@@ -117,12 +128,12 @@ export function HeroNumber({ state, onEnded }: HeroNumberProps) {
         </span>
       </header>
 
-      <section class="hero__readout">
+      <section class={`hero__readout${stale ? " hero__readout--stale" : ""}`}>
         <div
           class="hero__num"
           aria-label={
             latest_sample !== null
-              ? `hearth at ${tempLabel} degrees fahrenheit`
+              ? `hearth at ${tempLabel} degrees fahrenheit${stale ? " — sensor data is stale" : ""}`
               : "hearth temperature unavailable"
           }
         >
@@ -130,6 +141,7 @@ export function HeroNumber({ state, onEnded }: HeroNumberProps) {
         </div>
         <div class="hero__unit">DEGREES FAHRENHEIT</div>
         {latest_sample === null && <div class="hero__delta">awaiting sensor data</div>}
+        {stale && <div class="hero__delta hero__delta--stale">sensor stale</div>}
       </section>
 
       <footer class="hero__pizza-bar">

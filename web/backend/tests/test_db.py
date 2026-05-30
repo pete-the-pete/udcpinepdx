@@ -31,7 +31,7 @@ def test_foreign_keys_are_enforced(tmp_path) -> None:
     # A sample referencing a non-existent firing must be rejected.
     with pytest.raises(sqlite3.IntegrityError):
         conn.execute(
-            "INSERT INTO sample (firing_id, t, temp_f) VALUES (999, '2026-01-01T00:00:00Z', 70.0)"
+            "INSERT INTO sample (firing_id, t, temp_c) VALUES (999, '2026-01-01T00:00:00Z', 21.0)"
         )
         conn.commit()
 

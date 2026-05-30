@@ -137,9 +137,14 @@ export function ChefWidget({ latest_sample }: ChefWidgetProps) {
     injectCycleKeyframes();
   }, []);
 
-  const tempF = latest_sample?.temp_f ?? null;
-  const state = selectState(tempF, prevState.current, manifest);
+  // Wire unit is °C; we convert to °F at the very end for the on-screen
+  // label so the operator reads American units. The state machine itself
+  // is metric — that's what the manifest declares and the thermocouple
+  // reports.
+  const tempC = latest_sample?.temp_c ?? null;
+  const state = selectState(tempC, prevState.current, manifest);
   prevState.current = state;
+  const tempF = tempC !== null ? tempC * 9 / 5 + 32 : null;
 
   if (mode === "compact") {
     return (

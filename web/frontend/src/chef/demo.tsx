@@ -7,40 +7,47 @@ import { selectState } from "./state-machine";
 import "../styles.css";
 import "./demo.css";
 
-const MIN_F = 0;
-const MAX_F = 700;
-const SWEEP_STEP_F = 4;
+// All driving values are degrees Celsius — that's what the manifest and
+// the state machine speak. The on-screen °F readout is converted at render
+// time so the demo mirrors what the real dashboard shows.
+const MIN_C = -20;
+const MAX_C = 400;
+const SWEEP_STEP_C = 2;
 const SWEEP_INTERVAL_MS = 120;
 
 interface BandJump {
   label: string;
-  tempF: number;
+  tempC: number;
 }
 
 // One quick-jump per manifest band (its midpoint), plus an above-range jump
-// that lands in the deferred very_hot band to exercise the missing-state clamp.
+// that lands past the top band to exercise the missing-state clamp.
 const bandJumps: BandJump[] = (() => {
   const jumps: BandJump[] = Object.entries(manifest.states).map(
     ([state, spec]) => {
-      const lo = spec.temp_f[0] ?? MIN_F;
-      const hi = spec.temp_f[1] ?? MAX_F;
-      return { label: state, tempF: Math.round((lo + hi) / 2) };
+      const lo = spec.temp_c[0] ?? MIN_C;
+      const hi = spec.temp_c[1] ?? MAX_C;
+      return { label: state, tempC: Math.round((lo + hi) / 2) };
     },
   );
-  jumps.push({ label: "very_hot (clamp)", tempF: 620 });
+  jumps.push({ label: "off-scale (clamp)", tempC: 360 });
   return jumps;
 })();
 
-function tempInSomeBand(tempF: number): boolean {
+function tempInSomeBand(tempC: number): boolean {
   return Object.values(manifest.states).some((spec) => {
-    const lo = spec.temp_f[0] ?? -Infinity;
-    const hi = spec.temp_f[1] ?? Infinity;
-    return tempF >= lo && tempF < hi;
+    const lo = spec.temp_c[0] ?? -Infinity;
+    const hi = spec.temp_c[1] ?? Infinity;
+    return tempC >= lo && tempC < hi;
   });
 }
 
+function toFahrenheit(tempC: number): number {
+  return tempC * 9 / 5 + 32;
+}
+
 function ChefDemo() {
-  const [tempF, setTempF] = useState(150);
+  const [tempC, setTempC] = useState(70);
   const [playing, setPlaying] = useState(false);
   const sweepDir = useRef(1);
   const prevState = useRef<ChefState | null>(null);
@@ -48,13 +55,13 @@ function ChefDemo() {
   useEffect(() => {
     if (!playing) return;
     const id = setInterval(() => {
-      setTempF((t) => {
-        let next = t + sweepDir.current * SWEEP_STEP_F;
-        if (next >= MAX_F) {
-          next = MAX_F;
+      setTempC((t) => {
+        let next = t + sweepDir.current * SWEEP_STEP_C;
+        if (next >= MAX_C) {
+          next = MAX_C;
           sweepDir.current = -1;
-        } else if (next <= MIN_F) {
-          next = MIN_F;
+        } else if (next <= MIN_C) {
+          next = MIN_C;
           sweepDir.current = 1;
         }
         return next;
@@ -65,23 +72,24 @@ function ChefDemo() {
 
   function drive(next: number) {
     setPlaying(false);
-    setTempF(next);
+    setTempC(next);
   }
 
-  const sample: Sample = { t: new Date().toISOString(), temp_f: tempF };
+  const sample: Sample = { t: new Date().toISOString(), temp_c: tempC };
   // Mirror ChefWidget's internal hysteresis ref so the panel readout matches
   // the widget. They stay in sync because both run selectState over the same
   // temperature sequence in the same order.
-  const state = selectState(tempF, prevState.current, manifest);
+  const state = selectState(tempC, prevState.current, manifest);
   prevState.current = state;
-  const clamped = !tempInSomeBand(tempF);
+  const clamped = !tempInSomeBand(tempC);
+  const tempF = Math.round(toFahrenheit(tempC));
 
   return (
     <main class="hero">
       <div class="hero__ember" aria-hidden="true" />
 
       <section class="hero__readout">
-        <div class="hero__num">{Math.round(tempF)}</div>
+        <div class="hero__num">{tempF}</div>
         <div class="hero__unit">DEGREES FAHRENHEIT</div>
       </section>
 
@@ -89,20 +97,20 @@ function ChefDemo() {
 
       <div class="demo-panel">
         <div class="demo-panel__readout">
-          {Math.round(tempF)}°F → <strong>{state}</strong>
+          {Math.round(tempC)}°C ({tempF}°F) → <strong>{state}</strong>
           {clamped && <span class="demo-panel__clamp"> (clamped)</span>}
         </div>
         <input
           type="range"
-          aria-label="oven temperature"
-          min={MIN_F}
-          max={MAX_F}
-          value={tempF}
+          aria-label="oven temperature (°C)"
+          min={MIN_C}
+          max={MAX_C}
+          value={tempC}
           onInput={(e) => drive(Number(e.currentTarget.value))}
         />
         <div class="demo-panel__bands">
           {bandJumps.map((j) => (
-            <button key={j.label} type="button" onClick={() => drive(j.tempF)}>
+            <button key={j.label} type="button" onClick={() => drive(j.tempC)}>
               {j.label}
             </button>
           ))}

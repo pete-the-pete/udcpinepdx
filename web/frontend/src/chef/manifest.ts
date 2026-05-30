@@ -7,8 +7,8 @@ export interface ChefStateSpec {
   frames: number;
   fps: number | null;
   css_animation?: string;
-  /** Inclusive low edge, exclusive high edge; null means ±∞. */
-  temp_f: (number | null)[];
+  /** Inclusive low edge, exclusive high edge; null means ±∞. Degrees Celsius. */
+  temp_c: (number | null)[];
 }
 
 export interface ChefManifest {

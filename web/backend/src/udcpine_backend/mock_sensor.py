@@ -1,39 +1,56 @@
 """Background thread that produces mock 1Hz hearth samples while a
 firing is active. The temperature curve is:
 
-  - linear climb from 70°F at t=0 → 850°F at t=600s,
-  - then a steady plateau at 850°F with small ±5°F noise.
+  - linear climb from 21°C at t=0 → 454°C at t=600s,
+  - then a steady plateau at 454°C with small ±3°C noise.
 
 Noise is deterministic (seeded by integer-seconds elapsed) so tests can
 assert exact values.
+
+The thread is gated on the `UDCPINE_MOCK_SENSOR` env var (default off) so
+a real Pi publishing samples via `/api/ingest/sample` is not shadowed by
+a parallel mock stream. Tests that exercise the mock loop set the var
+explicitly.
 """
 
 from __future__ import annotations
 
 import math
+import os
 import threading
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .store import Store
 
-START_TEMP_F = 70.0
-TARGET_TEMP_F = 850.0
+START_TEMP_C = 21.0
+TARGET_TEMP_C = 454.0
 RAMP_SECONDS = 600
-NOISE_BAND_F = 5.0
+NOISE_BAND_C = 3.0
 
 
-def ramp_temp_f(*, elapsed_s: float) -> float:
-    """Pure function: elapsed seconds since firing start → degrees F."""
+def ramp_temp_c(*, elapsed_s: float) -> float:
+    """Pure function: elapsed seconds since firing start → degrees C."""
     if elapsed_s <= 0:
-        return START_TEMP_F
+        return START_TEMP_C
     if elapsed_s <= RAMP_SECONDS:
-        slope = (TARGET_TEMP_F - START_TEMP_F) / RAMP_SECONDS
-        return START_TEMP_F + slope * elapsed_s
+        slope = (TARGET_TEMP_C - START_TEMP_C) / RAMP_SECONDS
+        return START_TEMP_C + slope * elapsed_s
     # Plateau with deterministic noise: a low-frequency sine keyed by the
     # integer second. Avoids RNG state so the function stays pure.
-    noise = math.sin(elapsed_s * 0.137) * NOISE_BAND_F
-    return TARGET_TEMP_F + noise
+    noise = math.sin(elapsed_s * 0.137) * NOISE_BAND_C
+    return TARGET_TEMP_C + noise
+
+
+def mock_sensor_enabled() -> bool:
+    """True iff `UDCPINE_MOCK_SENSOR` is set to a truthy value.
+
+    Off by default — the production deploy expects samples from the Pi's
+    real thermocouple. Tests opt in explicitly via env var or by
+    instantiating MockSensorThread directly.
+    """
+    val = os.environ.get("UDCPINE_MOCK_SENSOR", "").strip().lower()
+    return val in {"1", "true", "yes", "on"}
 
 
 class MockSensorThread(threading.Thread):
@@ -55,5 +72,5 @@ class MockSensorThread(threading.Thread):
                 elapsed = (
                     self._store._clock.now() - firing.started_at  # noqa: SLF001
                 ).total_seconds()
-                self._store.publish_sample(temp_f=ramp_temp_f(elapsed_s=elapsed))
+                self._store.publish_sample(temp_c=ramp_temp_c(elapsed_s=elapsed))
             self._stop.wait(self._interval_s)

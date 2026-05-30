@@ -100,15 +100,24 @@ def test_stream_route_returns_event_stream(paired_client, store) -> None:
     emits valid event-stream bytes that validate against LiveEvent.
 
     Flask's test client doesn't model long-lived connections well, so we
-    pre-start a firing (which causes the sensor thread to publish a
-    sample within ~1s) and read just enough bytes to find one data
-    line. The full live-update flow is exercised end-to-end in make dev."""
+    open the stream first, then publish a sample on a worker thread so
+    the SSE generator has something to yield. The full live-update flow
+    is exercised end-to-end in make dev."""
+    import threading
+    import time
+
     from generated.pydantic import LiveEvent
 
     store.start_firing()
     res = paired_client.get("/api/stream", buffered=False)
     assert res.status_code == 200
     assert res.content_type.startswith("text/event-stream")
+
+    def push() -> None:
+        time.sleep(0.05)  # let the SSE generator subscribe first
+        store.publish_sample(temp_c=260.0)
+
+    threading.Thread(target=push, daemon=True).start()
 
     body = b""
     for raw in res.response:

@@ -67,11 +67,11 @@ class Store:
             return
         self._firing = _firing_from_row(row)
         srow = self._conn.execute(
-            "SELECT t, temp_f FROM sample WHERE firing_id=? ORDER BY id DESC LIMIT 1",
+            "SELECT t, temp_c FROM sample WHERE firing_id=? ORDER BY id DESC LIMIT 1",
             (self._firing.id,),
         ).fetchone()
         if srow is not None:
-            self._latest_sample = Sample(t=srow["t"], temp_f=srow["temp_f"])
+            self._latest_sample = Sample(t=srow["t"], temp_c=srow["temp_c"])
         prow = self._conn.execute(
             "SELECT * FROM pizza WHERE firing_id=? AND ended_at IS NULL ORDER BY seq DESC LIMIT 1",
             (self._firing.id,),
@@ -96,10 +96,10 @@ class Store:
         """The full sample series for a firing, oldest first."""
         with self._lock:
             rows = self._conn.execute(
-                "SELECT t, temp_f FROM sample WHERE firing_id=? ORDER BY id",
+                "SELECT t, temp_c FROM sample WHERE firing_id=? ORDER BY id",
                 (firing_id,),
             ).fetchall()
-        return [Sample(t=r["t"], temp_f=r["temp_f"]) for r in rows]
+        return [Sample(t=r["t"], temp_c=r["temp_c"]) for r in rows]
 
     def pizzas(self, firing_id: int) -> list[Pizza]:
         """All pizzas for a firing, in seq order."""
@@ -164,23 +164,27 @@ class Store:
             self._broadcast(ev)
         return ended
 
-    def publish_sample(self, *, temp_f: float) -> None:
+    def publish_sample(self, *, temp_c: float) -> None:
         """Record a hearth reading for the active firing. A no-op when the
-        oven is idle — a sample belongs to a firing."""
+        oven is idle — a sample belongs to a firing.
+
+        Temperature is degrees Celsius. The frontend converts to °F at
+        render time; storage and the wire stay metric.
+        """
         with self._lock:
             if self._firing is None:
                 return
             t = self._clock.now()
             self._conn.execute(
-                "INSERT INTO sample (firing_id, t, temp_f) VALUES (?, ?, ?)",
-                (self._firing.id, t.isoformat(), temp_f),
+                "INSERT INTO sample (firing_id, t, temp_c) VALUES (?, ?, ?)",
+                (self._firing.id, t.isoformat(), temp_c),
             )
             self._conn.commit()
-            self._latest_sample = Sample(t=t, temp_f=temp_f)
+            self._latest_sample = Sample(t=t, temp_c=temp_c)
             event: dict[str, Any] = {
                 "type": "sample",
                 "t": t.isoformat(),
-                "temp_f": temp_f,
+                "temp_c": temp_c,
             }
         self._broadcast(event)
 
