@@ -88,10 +88,10 @@ def test_subscriber_receives_published_event(db_path) -> None:
     s = Store(db_path, clock=AdvancingClock(T0))
     s.start_firing()
     q = s.subscribe()
-    s.publish_sample(temp_f=847.0)
+    s.publish_sample(temp_c=453.0)
     event = q.get(timeout=0.5)
     assert event["type"] == "sample"
-    assert event["temp_f"] == 847.0
+    assert event["temp_c"] == 453.0
     assert "t" in event
 
 
@@ -117,14 +117,14 @@ def test_stop_firing_publishes_firing_ended(db_path) -> None:
 def test_publish_sample_updates_latest_sample(db_path) -> None:
     s = Store(db_path, clock=AdvancingClock(T0))
     s.start_firing()
-    s.publish_sample(temp_f=200.0)
+    s.publish_sample(temp_c=200.0)
     assert s.latest_sample() is not None
-    assert s.latest_sample().temp_f == 200.0
+    assert s.latest_sample().temp_c == 200.0
 
 
 def test_publish_sample_without_a_firing_is_a_noop(db_path) -> None:
     s = Store(db_path, clock=FixedClock(T0))
-    s.publish_sample(temp_f=200.0)  # no active firing
+    s.publish_sample(temp_c=200.0)  # no active firing
     assert s.latest_sample() is None
 
 
@@ -133,7 +133,7 @@ def test_unsubscribe_stops_delivery(db_path) -> None:
     s.start_firing()
     q = s.subscribe()
     s.unsubscribe(q)
-    s.publish_sample(temp_f=100.0)
+    s.publish_sample(temp_c=100.0)
     with pytest.raises(Exception):
         q.get(timeout=0.05)
 
@@ -146,7 +146,7 @@ def test_emitted_events_validate_against_live_event_schema(db_path) -> None:
     s = Store(db_path, clock=AdvancingClock(T0))
     q = s.subscribe()
     s.start_firing()
-    s.publish_sample(temp_f=847.0)
+    s.publish_sample(temp_c=453.0)
     s.stop_firing()
     for _ in range(3):
         LiveEvent.model_validate(q.get(timeout=0.5))
@@ -156,16 +156,16 @@ def test_samples_returns_the_series(db_path) -> None:
     s = Store(db_path, clock=AdvancingClock(T0))
     firing = s.start_firing()
     for temp in (70.0, 120.0, 300.0):
-        s.publish_sample(temp_f=temp)
+        s.publish_sample(temp_c=temp)
     series = s.samples(firing.id)
-    assert [round(x.temp_f) for x in series] == [70, 120, 300]
+    assert [round(x.temp_c) for x in series] == [70, 120, 300]
 
 
 def test_active_firing_is_rehydrated_by_a_new_store(db_path) -> None:
     """A restart mid-firing: a fresh Store on the same db resumes."""
     s1 = Store(db_path, clock=AdvancingClock(T0))
     started = s1.start_firing()
-    s1.publish_sample(temp_f=275.0)
+    s1.publish_sample(temp_c=275.0)
 
     s2 = Store(db_path, clock=AdvancingClock(T0))  # "restart"
     resumed = s2.firing()
@@ -173,7 +173,7 @@ def test_active_firing_is_rehydrated_by_a_new_store(db_path) -> None:
     assert resumed.id == started.id
     assert resumed.status == "active"
     assert s2.latest_sample() is not None
-    assert s2.latest_sample().temp_f == 275.0
+    assert s2.latest_sample().temp_c == 275.0
 
 
 def test_ended_firing_is_not_rehydrated(db_path) -> None:
@@ -187,9 +187,9 @@ def test_ended_firing_is_not_rehydrated(db_path) -> None:
 def test_samples_persist_across_store_instances(db_path) -> None:
     s1 = Store(db_path, clock=AdvancingClock(T0))
     firing = s1.start_firing()
-    s1.publish_sample(temp_f=88.0)
+    s1.publish_sample(temp_c=88.0)
     s2 = Store(db_path, clock=AdvancingClock(T0))
-    assert [round(x.temp_f) for x in s2.samples(firing.id)] == [88]
+    assert [round(x.temp_c) for x in s2.samples(firing.id)] == [88]
 
 
 def test_new_store_has_no_active_pizza(db_path) -> None:

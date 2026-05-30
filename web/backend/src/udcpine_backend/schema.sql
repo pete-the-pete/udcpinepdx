@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS sample (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   firing_id   INTEGER NOT NULL REFERENCES firing(id),
   t           TEXT NOT NULL,
-  temp_f      REAL NOT NULL
+  temp_c      REAL NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS sample_firing_idx ON sample(firing_id);

@@ -37,7 +37,7 @@ class Sample(BaseModel):
         extra="forbid",
     )
     t: AwareDatetime
-    temp_f: float
+    temp_c: float
 
 
 class Pizza(BaseModel):
@@ -67,7 +67,7 @@ class LiveEvent1(BaseModel):
     )
     type: Literal["sample"]
     t: AwareDatetime
-    temp_f: float
+    temp_c: float
 
 
 class LiveEvent2(BaseModel):
@@ -140,3 +140,11 @@ class PizzaNextRequest(BaseModel):
         extra="forbid",
     )
     name: constr(min_length=1)
+
+
+class IngestSampleRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    temp_c: float
+    t: AwareDatetime | None = None

@@ -10,7 +10,7 @@ export const LiveEventSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("sample"),
     t: z.string().datetime({ offset: true }),
-    temp_f: z.number(),
+    temp_c: z.number(),
   }),
   z.object({
     type: z.literal("firing_started"),

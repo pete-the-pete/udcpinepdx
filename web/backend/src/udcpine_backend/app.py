@@ -13,12 +13,23 @@ import socket
 from pathlib import Path
 
 from flask import Flask, Response, request, send_from_directory
-from generated.pydantic import ExchangeRequest, LiveState, PizzaNextRequest
+from generated.pydantic import (
+    ExchangeRequest,
+    IngestSampleRequest,
+    LiveState,
+    PizzaNextRequest,
+)
 from pydantic import ValidationError
 
 from .auth_store import AuthStore
-from .mock_sensor import MockSensorThread
+from .mock_sensor import MockSensorThread, mock_sensor_enabled
 from .store import Store
+
+# Hard cap for the ingest endpoint body. A valid IngestSampleRequest is
+# ~60 bytes; 1 KB is generous. Enforced per-route (not via Flask's global
+# MAX_CONTENT_LENGTH) so future routes — camera frames, config push — can
+# set their own ceiling without fighting the ingest limit.
+_INGEST_MAX_BODY_BYTES = 1024
 
 SESSION_COOKIE = "udcpine_session"
 # 30 days; HttpOnly + Lax. Not Secure — see plan, HTTP on the LAN.
@@ -79,8 +90,13 @@ def create_app(
     sensor: MockSensorThread | None = None
 
     def ensure_sensor() -> None:
+        # Mock sensor is opt-in via UDCPINE_MOCK_SENSOR. With a real Pi
+        # publishing samples to /api/ingest/sample, the mock would shadow
+        # the live readings — default-off is the only sane production
+        # posture. Tests that exercise the mock loop set the env var
+        # explicitly or instantiate MockSensorThread directly.
         nonlocal sensor
-        if sensor is None:
+        if sensor is None and mock_sensor_enabled():
             sensor = MockSensorThread(s)
             sensor.start()
 
@@ -92,10 +108,20 @@ def create_app(
     def _require_auth():
         # Only /api/* is gated. The auth exchange must stay open — it is
         # the only way to obtain a cookie in the first place.
+        #
+        # The ingest endpoint is also exempt. The LAN is the trust boundary
+        # (see plan § "Decisions locked in this session"): the dashboard
+        # itself trusts the LAN, so making ingest stronger than the UI it
+        # feeds is incoherent, and a bearer token over plaintext HTTP is
+        # theater — anyone who can POST can also sniff the token. CSRF from
+        # a malicious webpage is blocked by Pydantic's application/json
+        # requirement (it forces a preflight).
         path = request.path
         if not path.startswith("/api/"):
             return None
         if path == "/api/auth/exchange":
+            return None
+        if path == "/api/ingest/sample":
             return None
         cookie = request.cookies.get(SESSION_COOKIE, "")
         if cookie and auth.validate_cookie(cookie):
@@ -136,6 +162,49 @@ def create_app(
         if pizza is None:
             return Response('{"error":"no active firing"}', status=409, mimetype="application/json")
         return Response(pizza.model_dump_json(), mimetype="application/json")
+
+    @app.post("/api/ingest/sample")
+    def post_ingest_sample() -> tuple[Response, int] | Response:
+        # Per-route body cap. Cheap to enforce here; deliberate not to
+        # set Flask's global MAX_CONTENT_LENGTH (would trip future
+        # camera/config routes). Check Content-Length when honest, then
+        # fall back to a length read of the body — a producer omitting
+        # Content-Length still pays for whatever they sent.
+        declared = request.content_length
+        if declared is not None and declared > _INGEST_MAX_BODY_BYTES:
+            return Response(
+                '{"error":"body too large"}',
+                status=413,
+                mimetype="application/json",
+            )
+        # 415 first: Pydantic's JSON requirement is the CSRF preflight
+        # guarantee. A text/plain POST must not reach the validator.
+        if request.mimetype != "application/json":
+            return Response(
+                '{"error":"expected application/json"}',
+                status=415,
+                mimetype="application/json",
+            )
+        raw = request.get_data(cache=False, as_text=False)
+        if len(raw) > _INGEST_MAX_BODY_BYTES:
+            return Response(
+                '{"error":"body too large"}',
+                status=413,
+                mimetype="application/json",
+            )
+        try:
+            payload = json.loads(raw.decode("utf-8")) if raw else None
+            body = IngestSampleRequest.model_validate(payload)
+        except (ValueError, ValidationError) as e:
+            errors = e.errors(include_url=False) if isinstance(e, ValidationError) else str(e)
+            return Response(
+                json.dumps({"error": errors}),
+                status=422,
+                mimetype="application/json",
+            )
+        s.publish_sample(temp_c=body.temp_c)
+        # 204: no body, no allocation, lowest latency for a 1 Hz producer.
+        return Response(status=204)
 
     @app.get("/api/stream")
     def get_stream() -> Response:

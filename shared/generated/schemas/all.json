@@ -47,13 +47,13 @@
           "type": "string",
           "format": "date-time"
         },
-        "temp_f": {
+        "temp_c": {
           "type": "number"
         }
       },
       "required": [
         "t",
-        "temp_f"
+        "temp_c"
       ],
       "additionalProperties": false
     },
@@ -156,14 +156,14 @@
               "type": "string",
               "format": "date-time"
             },
-            "temp_f": {
+            "temp_c": {
               "type": "number"
             }
           },
           "required": [
             "type",
             "t",
-            "temp_f"
+            "temp_c"
           ],
           "additionalProperties": false
         },
@@ -289,6 +289,22 @@
       },
       "required": [
         "name"
+      ],
+      "additionalProperties": false
+    },
+    "IngestSampleRequest": {
+      "type": "object",
+      "properties": {
+        "temp_c": {
+          "type": "number"
+        },
+        "t": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "temp_c"
       ],
       "additionalProperties": false
     }
