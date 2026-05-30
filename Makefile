@@ -3,19 +3,23 @@
 include shared/Makefile.include
 include web/backend/Makefile.include
 include web/frontend/Makefile.include
+include firmware/Makefile.include
 
 .PHONY: help build codegen test lint dev serve e2e db-reset
 
 help:
 	@echo "Available targets:"
-	@echo "  build     install all workspace deps (bun + uv)"
-	@echo "  codegen   regenerate shared/generated/ from Zod sources"
-	@echo "  test      run all test suites"
-	@echo "  lint      run all linters"
-	@echo "  dev       run Flask + Vite together (Ctrl-C stops both)"
-	@echo "  serve     build the SPA + serve it from Flask on the LAN (Pi kiosk)"
-	@echo "  e2e       run Playwright end-to-end tests (boots both servers)"
-	@echo "  db-reset  delete the local dev SQLite database"
+	@echo "  build      install all workspace deps (bun + uv)"
+	@echo "  codegen    regenerate shared/generated/ from Zod sources"
+	@echo "  test       run all test suites"
+	@echo "  lint       run all linters"
+	@echo "  dev        run Flask + Vite together (Ctrl-C stops both)"
+	@echo "  serve      build the SPA + serve it from Flask on the LAN (Pi kiosk)"
+	@echo "  e2e        run Playwright end-to-end tests (boots both servers)"
+	@echo "  db-reset   delete the local dev SQLite database"
+	@echo "  pi-build   sync firmware deps for deploy (run on Mac)"
+	@echo "  pi-deploy  rsync firmware/ to PI_HOST and restart the service"
+	@echo "  pi-logs    tail journald for udcpine-firmware on PI_HOST"
 
 build:
 	bun install
