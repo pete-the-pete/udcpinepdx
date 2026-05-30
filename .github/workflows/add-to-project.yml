@@ -2,9 +2,9 @@ name: Add to project
 
 on:
   issues:
-    types: [opened, reopened]
+    types: [opened, reopened, closed]
   pull_request_target:
-    types: [opened, reopened, ready_for_review]
+    types: [opened, reopened, ready_for_review, closed]
 
 permissions: {}
 
@@ -26,6 +26,7 @@ jobs:
           GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
           ITEM_ID: ${{ steps.add.outputs.itemId }}
           IS_PR: ${{ github.event_name == 'pull_request_target' }}
+          IS_CLOSE: ${{ github.event.action == 'closed' }}
           HAS_AGENT_READY: ${{ github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'agent-ready') }}
         run: |
           set -euo pipefail
@@ -36,7 +37,12 @@ jobs:
             --jq '.data.user.projectV2.id')"
 
           STATUS_FIELD_ID="PVTSSF_lAHOAAVHgc4BUmcOzhBtgJA"
-          if [ "$IS_PR" = "true" ]; then
+          # Closed issues and closed PRs (merged or discarded) → Done. The
+          # board has no separate "Cancelled" lane; discarded PRs land in Done
+          # too, which is fine — they're out of the queue either way.
+          if [ "$IS_CLOSE" = "true" ]; then
+            OPTION_ID="fc4374c8"   # Done
+          elif [ "$IS_PR" = "true" ]; then
             OPTION_ID="bcfefaf6"   # In Progress
           elif [ "$HAS_AGENT_READY" = "true" ]; then
             OPTION_ID="9f289c57"   # Ready
