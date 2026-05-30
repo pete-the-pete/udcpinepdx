@@ -1,0 +1,22 @@
+FIRMWARE_DIR := firmware
+PI_HOST ?=
+
+.PHONY: pi-build pi-deploy pi-logs _pi-require-host
+
+_pi-require-host:
+	@if [ -z "$(PI_HOST)" ]; then \
+		echo "PI_HOST is required, e.g. make pi-deploy PI_HOST=pi@oven.local"; \
+		exit 2; \
+	fi
+
+pi-build:
+	cd $(FIRMWARE_DIR) && uv sync --frozen
+
+pi-deploy: _pi-require-host pi-build
+	rsync -a --delete \
+		--exclude '__pycache__' --exclude '.pytest_cache' --exclude 'tests' \
+		$(FIRMWARE_DIR)/ $(PI_HOST):/opt/udcpine-firmware/
+	ssh $(PI_HOST) 'sudo systemctl restart udcpine-firmware'
+
+pi-logs: _pi-require-host
+	ssh $(PI_HOST) 'journalctl -u udcpine-firmware -f'
