@@ -5,18 +5,19 @@ PI_HOST ?=
 
 _pi-require-host:
 	@if [ -z "$(PI_HOST)" ]; then \
-		echo "PI_HOST is required, e.g. make pi-deploy PI_HOST=pi@oven.local"; \
+		echo "PI_HOST is required, e.g. make pi-deploy PI_HOST=<user>@<host>.local"; \
 		exit 2; \
 	fi
 
 pi-build:
-	cd $(FIRMWARE_DIR) && uv sync --frozen
+	cd $(FIRMWARE_DIR) && uv lock
 
 pi-deploy: _pi-require-host pi-build
 	rsync -a --delete \
-		--exclude '__pycache__' --exclude '.pytest_cache' --exclude 'tests' \
+		--exclude '__pycache__' --exclude '.pytest_cache' \
+		--exclude 'tests' --exclude '.venv' \
 		$(FIRMWARE_DIR)/ $(PI_HOST):/opt/udcpine-firmware/
-	ssh $(PI_HOST) 'sudo systemctl restart udcpine-firmware'
+	ssh $(PI_HOST) 'cd /opt/udcpine-firmware && uv sync --frozen && sudo systemctl restart udcpine-firmware'
 
 pi-logs: _pi-require-host
 	ssh $(PI_HOST) 'journalctl -u udcpine-firmware -f'
