@@ -1,0 +1,18 @@
+[Unit]
+Description=udcpinepdx thermocouple sampler (MAX6675 → backend over LAN)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=udcpine
+Group=udcpine
+WorkingDirectory=/opt/udcpine-firmware
+ExecStart=/opt/udcpine-firmware/.venv/bin/udcpine-firmware --server http://CHANGE-ME:5001 --hz 1
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
