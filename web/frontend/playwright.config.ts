@@ -34,6 +34,7 @@ export default defineConfig({
       env: {
         UDCPINE_BOOTSTRAP_TOKEN: "e2e-bootstrap-token",
         UDCPINE_DB_PATH: ":memory:",
+        UDCPINE_MOCK_SENSOR: "1",
       },
     },
     {
