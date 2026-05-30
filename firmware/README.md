@@ -41,6 +41,11 @@ This is a hands-on runbook, not a script. Pete will be at the device for
 the wiring anyway, so the steps that need physical access aren't
 automated.
 
+Modern Pi OS images do not ship with a default `pi` user — the login
+username is set in Pi Imager at flash time. Substitute your actual
+username for `<user>` in the examples below; the host shown is
+`<user>@<host>.local`.
+
 ### 1. Enable SPI
 
 ```sh
@@ -85,6 +90,42 @@ sudo mkdir -p /opt/udcpine-firmware
 sudo chown udcpine:udcpine /opt/udcpine-firmware
 ```
 
+### 3b. Re-own the install directory for deploy access
+
+`make pi-deploy` rsyncs as your login user, while the systemd unit runs
+as `udcpine`. Make the directory owner-writable by you and
+group-readable by the service user, with the setgid bit so new files
+inherit the right group:
+
+```sh
+sudo chown -R <user>:udcpine /opt/udcpine-firmware
+sudo chmod -R 2770 /opt/udcpine-firmware
+```
+
+### 3c. Install `uv` system-wide
+
+`uv sync` runs on the Pi every deploy (the Mac never builds the venv —
+the platform is wrong). Install once into `/usr/local/bin` so any user
+can find it:
+
+```sh
+curl -LsSf https://astral.sh/uv/install.sh \
+  | sudo env UV_INSTALL_DIR=/usr/local/bin sh
+uv --version  # confirm
+```
+
+### 3d. Allow passwordless restart of the firmware service
+
+`make pi-deploy` ends with `sudo systemctl restart udcpine-firmware`
+over a non-interactive ssh; without NOPASSWD scoped to that one
+command, the deploy hangs.
+
+```sh
+echo '<user> ALL=(root) NOPASSWD: /bin/systemctl restart udcpine-firmware' \
+  | sudo tee /etc/sudoers.d/udcpine-deploy
+sudo chmod 440 /etc/sudoers.d/udcpine-deploy
+```
+
 ### 4. Install the systemd unit
 
 The unit file lives in this repo at `firmware/systemd/udcpine-firmware.service`.
@@ -93,7 +134,7 @@ restarts the existing unit):
 
 ```sh
 # From your Mac, one-off scp:
-scp firmware/systemd/udcpine-firmware.service pi@<host>:/tmp/
+scp firmware/systemd/udcpine-firmware.service <user>@<host>.local:/tmp/
 
 # On the Pi:
 sudo mv /tmp/udcpine-firmware.service /etc/systemd/system/
@@ -107,16 +148,18 @@ URL (the laptop's LAN IP, port 5001).
 ### 5. First deploy from the Mac
 
 ```sh
-make pi-deploy PI_HOST=pi@<host>
+make pi-deploy PI_HOST=<user>@<host>.local
 ```
 
-This runs `uv sync --frozen` locally, then rsyncs `firmware/` to
-`/opt/udcpine-firmware/` and restarts the service.
+This runs `uv lock` locally (platform-independent), rsyncs `firmware/`
+source to `/opt/udcpine-firmware/`, then runs `uv sync --frozen` on
+the Pi to build the venv with platform-correct wheels, and restarts
+the service.
 
 ### 6. Watch the logs
 
 ```sh
-make pi-logs PI_HOST=pi@<host>
+make pi-logs PI_HOST=<user>@<host>.local
 ```
 
 You should see one POST per second and `204` responses from Flask.
@@ -125,10 +168,10 @@ You should see one POST per second and `204` responses from Flask.
 
 | Action | Command (from Mac) |
 |---|---|
-| Push a code change to the Pi | `make pi-deploy PI_HOST=pi@<host>` |
-| Watch live logs | `make pi-logs PI_HOST=pi@<host>` |
-| Restart without redeploying | `ssh pi@<host> sudo systemctl restart udcpine-firmware` |
-| Stop the service | `ssh pi@<host> sudo systemctl stop udcpine-firmware` |
+| Push a code change to the Pi | `make pi-deploy PI_HOST=<user>@<host>.local` |
+| Watch live logs | `make pi-logs PI_HOST=<user>@<host>.local` |
+| Restart without redeploying | `ssh <user>@<host>.local sudo systemctl restart udcpine-firmware` |
+| Stop the service | `ssh <user>@<host>.local sudo systemctl stop udcpine-firmware` |
 
 ## Testing without a Pi
 

@@ -5,6 +5,7 @@ description = "Raspberry Pi firmware: MAX6675 thermocouple sampler that posts to
 requires-python = ">=3.11"
 dependencies = [
   "requests>=2.31,<3",
+  "spidev>=3.6,<4 ; sys_platform == 'linux'",
 ]
 
 [project.scripts]

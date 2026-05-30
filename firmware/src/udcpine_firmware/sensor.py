@@ -1,9 +1,10 @@
 """Thermocouple sensor abstractions.
 
-The real sensor pulls in `adafruit_circuitpython_max6675`, which itself
-requires `board` and `busio` and only works on real Pi hardware. We gate
-that import behind ``RealSensor`` so tests, `--simulate` runs, and any
-import on macOS keep working.
+The real sensor reads the MAX6675 directly over Linux ``spidev``. The
+MAX6675 protocol is a single 16-bit SPI read per sample — no Adafruit
+Blinka layer is needed. ``spidev`` is Linux-only, so the import lives
+inside ``RealSensor`` to keep this module import-safe on macOS, in CI,
+and during ``--simulate`` runs.
 """
 
 from __future__ import annotations
@@ -63,25 +64,34 @@ class FakeSensor:
 
 
 class RealSensor:
-    """MAX6675 reader backed by ``adafruit_circuitpython_max6675``.
+    """MAX6675 reader over Linux ``spidev``.
 
-    The hardware-only imports happen inside ``__init__`` so importing this
-    module on a laptop (no ``board``, no SPI bus) does not blow up.
+    Wire protocol: one 16-bit big-endian read per sample.
+    - Bits 15..3 → signed temperature in units of 0.25 °C (bit 15 is sign;
+      MAX6675 only reports 0..1024 °C so it's always 0 in practice).
+    - Bit 2 → open-thermocouple flag (no probe connected).
+    - Bits 1..0 → device ID + tristate; ignored.
+
+    The MAX6675 needs ~220 ms between conversions; calling at 1 Hz is
+    well within margin.
     """
 
-    def __init__(self) -> None:
-        # Imports deferred so this module is import-safe on macOS / in CI.
-        import adafruit_max6675  # type: ignore[import-not-found]
-        import board  # type: ignore[import-not-found]
-        import busio  # type: ignore[import-not-found]
-        import digitalio  # type: ignore[import-not-found]
+    _OPEN_THERMOCOUPLE_BIT = 0x4
 
-        spi = busio.SPI(clock=board.SCK, MISO=board.MISO)
-        cs = digitalio.DigitalInOut(board.D8)
-        self._device = adafruit_max6675.MAX6675(spi, cs)
+    def __init__(self, bus: int = 0, device: int = 0, max_speed_hz: int = 1_000_000) -> None:
+        import spidev  # Linux-only; import deferred so macOS/CI stay import-safe.
+
+        self._spi = spidev.SpiDev()
+        self._spi.open(bus, device)
+        self._spi.max_speed_hz = max_speed_hz
+        self._spi.mode = 0
 
     def read_temp_c(self) -> float:
         try:
-            return float(self._device.temperature)
-        except Exception as exc:  # noqa: BLE001 — library raises bare Exception variants
-            raise SensorError(str(exc)) from exc
+            hi, lo = self._spi.xfer2([0x00, 0x00])
+        except OSError as exc:
+            raise SensorError(f"SPI read failed: {exc}") from exc
+        word = (hi << 8) | lo
+        if word & self._OPEN_THERMOCOUPLE_BIT:
+            raise SensorError("open thermocouple (no probe connected)")
+        return ((word >> 3) & 0x1FFF) * 0.25
