@@ -46,7 +46,11 @@ pi-kiosk-on: _pi-require-host
 	 ssh $(PI_HOST) 'pkill chromium 2>/dev/null; loginctl terminate-user "'"$$USER"'" 2>/dev/null; true'; \
 	 echo "waiting for $$USER session to respawn..."; \
 	 ssh $(PI_HOST) 'for i in 1 2 3 4 5 6 7 8 9 10; do \
-	   loginctl list-sessions --no-legend 2>/dev/null | awk "{print \$$3}" | grep -qx "'"$$USER"'" && exit 0; \
+	   # seat0 filter is intentional: the SSH connection itself creates a logind
+	   # session owned by $$USER, so a plain user-column grep always matches.
+	   # We only want to detect the autologin graphical session on seat0.
+	   loginctl list-sessions --no-legend 2>/dev/null \
+	     | awk -v u="'"$$USER"'" '"'"'$$3==u && $$4=="seat0"{found=1} END{exit !found}'"'"' && exit 0; \
 	   sleep 1; \
 	 done; \
 	 echo "ERROR: '"$$USER"' session did not respawn after terminate-user."; \
@@ -55,4 +59,15 @@ pi-kiosk-on: _pi-require-host
 
 pi-kiosk-off: _pi-require-host
 	@USER=$$(echo "$(PI_HOST)" | cut -d@ -f1); \
-	 ssh $(PI_HOST) 'rm -f ~/.config/labwc/autostart; pkill chromium 2>/dev/null; loginctl terminate-user "'"$$USER"'" 2>/dev/null; true'
+	 ssh $(PI_HOST) 'rm -f ~/.config/labwc/autostart; pkill chromium 2>/dev/null; loginctl terminate-user "'"$$USER"'" 2>/dev/null; true'; \
+	 echo "waiting for $$USER session to settle (kiosk autostart removed)..."; \
+	 ssh $(PI_HOST) 'for i in 1 2 3 4 5 6 7 8 9 10; do \
+	   # seat0 filter: SSH session itself matches user column; we want seat0.
+	   # After removing autostart, no seat0 session should respawn — success
+	   # is when seat0 is gone. If it persists, the old autostart may remain.
+	   loginctl list-sessions --no-legend 2>/dev/null \
+	     | awk -v u="'"$$USER"'" '"'"'$$3==u && $$4=="seat0"{found=1} END{exit found}'"'"' && exit 0; \
+	   sleep 1; \
+	 done; \
+	 echo "WARNING: seat0 session still active after 10s — kiosk may have restarted."; \
+	 echo "         Recover with: ssh $(PI_HOST) sudo systemctl restart getty@tty1"

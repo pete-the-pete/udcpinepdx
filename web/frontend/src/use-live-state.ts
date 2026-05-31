@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from "preact/hooks";
 import { LiveEventSchema, type LiveState } from "@udcpine/shared";
 import { applyEvent } from "./reduce";
+import { RECONNECT_STEP_KEY } from "./views/reconnecting-overlay";
 
 type Action =
   | { kind: "reset"; state: LiveState }
@@ -63,7 +64,10 @@ export function useLiveState(initial: LiveState): {
     es.onmessage = (e) => {
       // Any message proves the stream is healthy — cancel any pending
       // "you've been CONNECTING for 3s" flip and snap back to connected.
+      // Also clear the persisted backoff step so the ReconnectingOverlay
+      // resets to step 0 if the connection drops again.
       clearDebounce();
+      try { sessionStorage.removeItem(RECONNECT_STEP_KEY); } catch { /* quota/private */ }
       setConnectionState("connected");
       try {
         const raw = JSON.parse(e.data);

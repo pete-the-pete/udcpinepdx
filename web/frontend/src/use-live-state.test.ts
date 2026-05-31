@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { renderHook, act } from "@testing-library/preact";
 import type { LiveState } from "@udcpine/shared";
 import { useLiveState } from "./use-live-state";
+import { RECONNECT_STEP_KEY } from "./views/reconnecting-overlay";
 
 /**
  * Minimal hand-rolled EventSource shim. The hook constructs `new
@@ -104,6 +105,7 @@ describe("useLiveState connectionState", () => {
   let clock: FakeClock;
 
   beforeEach(() => {
+    sessionStorage.clear();
     originalES = globalThis.EventSource;
     (globalThis as unknown as { EventSource: typeof EventSource }).EventSource =
       FakeEventSource as unknown as typeof EventSource;
@@ -113,6 +115,7 @@ describe("useLiveState connectionState", () => {
   });
 
   afterEach(() => {
+    sessionStorage.clear();
     (globalThis as unknown as { EventSource: typeof EventSource }).EventSource =
       originalES;
     clock.restore();
@@ -173,5 +176,28 @@ describe("useLiveState connectionState", () => {
       clock.advance(5000);
     });
     expect(result.current.connectionState).toBe("connected");
+  });
+
+  test("returning to 'connected' clears the persisted reconnect backoff step", async () => {
+    // Simulate prior reload cycles having stashed a non-zero step.
+    sessionStorage.setItem(RECONNECT_STEP_KEY, "3");
+
+    const { result } = renderHook(() => useLiveState(INITIAL));
+    const es = FakeEventSource.instances[0]!;
+
+    // Trigger a reconnecting state first so we're in an outage scenario.
+    await act(async () => {
+      es.fireError(FakeEventSource.CLOSED);
+    });
+    expect(result.current.connectionState).toBe("reconnecting");
+
+    // A message arriving on the stream proves the connection recovered.
+    await act(async () => {
+      es.fireMessage({ type: "sample", t: "2026-04-28T19:46:48-07:00", temp_c: 200 });
+    });
+    expect(result.current.connectionState).toBe("connected");
+
+    // The persisted step must be cleared so the next outage starts fresh.
+    expect(sessionStorage.getItem(RECONNECT_STEP_KEY)).toBeNull();
   });
 });

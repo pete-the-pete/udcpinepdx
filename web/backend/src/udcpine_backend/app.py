@@ -242,10 +242,11 @@ def create_app(
     # Test-only routes — registered only under UDCPINE_TEST_HOOKS=1 so
     # production builds cannot expose them. The break route closes the
     # currently-open SSE stream by flipping a flag the generator checks;
-    # heal flips it back. Both bypass _require_auth (pattern matches
-    # /api/_test/ which the auth gate doesn't special-case, but we leave
-    # them gated to keep the surface honest in tests). The auth gate is
-    # exited by exchanging the bootstrap token first, same as any test.
+    # heal flips it back. _require_auth special-cases /api/_test/* to skip
+    # the cookie check (see lines ~126-129), because Playwright calls these
+    # hooks via page.request.post() without going through the SPA's cookie
+    # jar. The hooks are gated on UDCPINE_TEST_HOOKS=1 at route-registration
+    # time, so they don't exist as routes in prod at all.
     if os.environ.get("UDCPINE_TEST_HOOKS") == "1":
 
         @app.post("/api/_test/break-stream")
