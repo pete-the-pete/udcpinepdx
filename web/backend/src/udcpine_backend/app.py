@@ -12,7 +12,7 @@ import secrets
 import socket
 from pathlib import Path
 
-from flask import Flask, Response, request, send_from_directory
+from flask import Flask, Response, abort, request, send_from_directory
 from generated.pydantic import (
     ExchangeRequest,
     IngestSampleRequest,
@@ -123,6 +123,10 @@ def create_app(
             return None
         if path == "/api/ingest/sample":
             return None
+        # Test-only routes (only registered under UDCPINE_TEST_HOOKS=1) are
+        # exempt so the Playwright test can call them without a cookie.
+        if path.startswith("/api/_test/"):
+            return None
         cookie = request.cookies.get(SESSION_COOKIE, "")
         if cookie and auth.validate_cookie(cookie):
             return None
@@ -206,20 +210,64 @@ def create_app(
         # 204: no body, no allocation, lowest latency for a 1 Hz producer.
         return Response(status=204)
 
+    # Test-only kill-switch for the SSE stream. Toggled by the
+    # /api/_test/break-stream and /api/_test/heal-stream routes, which are
+    # only registered when UDCPINE_TEST_HOOKS=1. Used by the Playwright
+    # reconnect test to assert the ReconnectingOverlay appears and clears.
+    stream_state: dict[str, bool] = {"broken": False}
+
     @app.get("/api/stream")
     def get_stream() -> Response:
+        if stream_state["broken"]:
+            abort(503)
         q = s.subscribe()
 
         def gen():
             try:
                 yield ": connected\n\n"
                 while True:
+                    if stream_state["broken"]:
+                        return
                     event = q.get()
+                    # Sentinel from /api/_test/break-stream wakes us so
+                    # we can observe the broken flag and exit.
+                    if isinstance(event, dict) and event.get("__break__"):
+                        return
                     yield f"data: {json.dumps(event)}\n\n"
             finally:
                 s.unsubscribe(q)
 
         return Response(gen(), mimetype="text/event-stream")
+
+    # Test-only routes — registered only under UDCPINE_TEST_HOOKS=1 so
+    # production builds cannot expose them. The break route closes the
+    # currently-open SSE stream by flipping a flag the generator checks;
+    # heal flips it back. Both bypass _require_auth (pattern matches
+    # /api/_test/ which the auth gate doesn't special-case, but we leave
+    # them gated to keep the surface honest in tests). The auth gate is
+    # exited by exchanging the bootstrap token first, same as any test.
+    if os.environ.get("UDCPINE_TEST_HOOKS") == "1":
+
+        @app.post("/api/_test/break-stream")
+        def post_test_break_stream() -> Response:
+            stream_state["broken"] = True
+            # Wake any blocked q.get() in open SSE generators so they
+            # observe the flag and return. The sentinel is a sub-protocol
+            # the generator recognizes (see get_stream above).
+            # pylint: disable=protected-access
+            with s._lock:  # type: ignore[attr-defined]
+                subs = list(s._subscribers)  # type: ignore[attr-defined]
+            for q in subs:
+                try:
+                    q.put_nowait({"__break__": True})
+                except Exception:  # noqa: BLE001
+                    pass
+            return Response('{"ok":true}', mimetype="application/json")
+
+        @app.post("/api/_test/heal-stream")
+        def post_test_heal_stream() -> Response:
+            stream_state["broken"] = False
+            return Response('{"ok":true}', mimetype="application/json")
 
     @app.post("/api/auth/exchange")
     def post_auth_exchange() -> tuple[Response, int] | Response:

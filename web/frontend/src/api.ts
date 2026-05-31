@@ -51,8 +51,39 @@ export const startFiring = (): Promise<Firing> => postFiring("/api/firing/start"
 export const endFiring = (): Promise<Firing> => postFiring("/api/firing/stop");
 
 /**
+ * sessionStorage key used to persist a successful bootstrap/pairing token
+ * across `window.location.reload()` (e.g. the ReconnectingOverlay's auto-
+ * reload). Backend AuthStore is in-memory, so a Flask restart invalidates
+ * every cookie — keeping the token here lets the boot effect re-exchange
+ * and recover without operator action. See the plan's
+ * "Reload-survives-restart" decision for the full reasoning.
+ */
+export const BOOTSTRAP_TOKEN_KEY = "udcpine.bootstrapToken";
+
+function safeSessionStorage(): Storage | null {
+  // Tests / non-browser contexts may not have window.sessionStorage. Be
+  // defensive rather than throwing during the api boot path.
+  try {
+    return typeof window === "undefined" ? null : window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+export function getStashedToken(): string | null {
+  return safeSessionStorage()?.getItem(BOOTSTRAP_TOKEN_KEY) ?? null;
+}
+
+export function clearStashedToken(): void {
+  safeSessionStorage()?.removeItem(BOOTSTRAP_TOKEN_KEY);
+}
+
+/**
  * Exchange a pairing token (from a ?t= URL param, a scanned QR, or the
  * server's bootstrap link) for a session cookie. Resolves true on success.
+ *
+ * On success the token is stashed in sessionStorage so a post-reload boot
+ * can recover from a backend restart (see BOOTSTRAP_TOKEN_KEY).
  */
 export async function exchangeToken(token: string): Promise<boolean> {
   const res = await fetch("/api/auth/exchange", {
@@ -60,6 +91,9 @@ export async function exchangeToken(token: string): Promise<boolean> {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ token }),
   });
+  if (res.ok) {
+    safeSessionStorage()?.setItem(BOOTSTRAP_TOKEN_KEY, token);
+  }
   return res.ok;
 }
 

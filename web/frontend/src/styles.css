@@ -393,3 +393,37 @@ body { min-height: 100dvh; }
   .pizza-form { flex-wrap: wrap; }
   .pizza-form__input { width: 100%; }
 }
+
+/* Reconnecting overlay: fullscreen blocker shown while /api/stream is
+   unreachable. Auto-reloads on a 1/2/5/10s backoff; "Reload now" lets an
+   operator skip the wait. */
+.reconnecting {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(14, 11, 8, 0.92);
+  display: grid; place-items: center;
+  padding: 24px;
+}
+.reconnecting__panel {
+  background: var(--bg-2);
+  border: 1px solid var(--bg-3);
+  border-radius: 16px;
+  padding: 32px 40px;
+  text-align: center;
+  max-width: 480px;
+}
+.reconnecting__title {
+  font-size: 28px; font-weight: 700;
+  color: var(--signal); letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.reconnecting__sub {
+  color: var(--ink-soft); font-size: 14px; letter-spacing: 2px;
+  margin-bottom: 24px;
+}
+.reconnecting__btn {
+  background: var(--signal); color: var(--bg);
+  border: none; border-radius: 8px;
+  padding: 12px 24px; font-size: 16px; font-weight: 600;
+  letter-spacing: 2px; cursor: pointer;
+}
+.reconnecting__btn:hover { background: var(--signal-soft); }
