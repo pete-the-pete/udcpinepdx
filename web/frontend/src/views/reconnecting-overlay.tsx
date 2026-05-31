@@ -56,7 +56,9 @@ function writePersistedStep(step: number): void {
  */
 export function ReconnectingOverlay() {
   const [step, setStep] = useState(() => readPersistedStep());
+  const [remaining, setRemaining] = useState(Math.round(backoffAt(step) / 1000));
 
+  // Reload timer — schedules the actual page reload at the backoff delay.
   useEffect(() => {
     const delay = backoffAt(step);
     const id = setTimeout(() => {
@@ -68,14 +70,21 @@ export function ReconnectingOverlay() {
     return () => clearTimeout(id);
   }, [step]);
 
-  const nextDelaySec = Math.round(backoffAt(step) / 1000);
+  // Countdown ticker — decrements the displayed seconds once per second so
+  // the operator sees a live countdown rather than a frozen number.
+  // Does NOT reschedule the reload; the setTimeout above owns that.
+  useEffect(() => {
+    setRemaining(Math.round(backoffAt(step) / 1000));
+    const id = setInterval(() => setRemaining((r) => Math.max(0, r - 1)), 1000);
+    return () => clearInterval(id);
+  }, [step]);
 
   return (
     <div class="reconnecting" role="alert" aria-live="assertive">
       <div class="reconnecting__panel">
         <div class="reconnecting__title">Reconnecting to oven…</div>
         <div class="reconnecting__sub">
-          Auto-reload in ~{nextDelaySec}s
+          Auto-reload in ~{remaining}s
         </div>
         <button
           type="button"

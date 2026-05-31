@@ -30,6 +30,8 @@ describe("ReconnectingOverlay", () => {
   test("renders overlay text and a Reload now button", () => {
     render(<ReconnectingOverlay />);
     expect(screen.getByText(/Reconnecting to oven/i)).toBeDefined();
+    // "Auto-reload in" prefix; the trailing number changes every second.
+    expect(screen.getByText(/Auto-reload in/i)).toBeDefined();
     expect(screen.getByRole("button", { name: /reload now/i })).toBeDefined();
   });
 

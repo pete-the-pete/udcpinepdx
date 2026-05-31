@@ -16,6 +16,7 @@ type Boot =
   | { kind: "loading" }
   | { kind: "ok"; initial: LiveState }
   | { kind: "unpaired" }
+  | { kind: "reconnecting" }
   | { kind: "error"; message: string };
 
 /** Read a ?t= pairing token from the URL, then strip it from history. */
@@ -30,7 +31,7 @@ function takeUrlToken(): string | null {
 
 export function App() {
   const [boot, setBoot] = useState<Boot>({ kind: "loading" });
-  const [nonce, setNonce] = useState(0);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +40,9 @@ export function App() {
       //   1. ?t= in the URL — fresh QR / bootstrap link, always wins.
       //   2. sessionStorage — survives a window.location.reload() after
       //      the laptop restarts. See "Reload-survives-restart" in the plan.
+      //      This is the kiosk-survival path: without it, a backend restart
+      //      strips the URL token (already consumed by takeUrlToken) and
+      //      leaves the kiosk stuck on <PairScreen/> until manual intervention.
       //
       // After fetchState(), a 401 means the cookie is invalid (backend
       // restarted, AuthStore wiped). If we have a stashed token, retry
@@ -60,7 +64,10 @@ export function App() {
       } catch (err) {
         if (cancelled) return;
         if (!(err instanceof UnauthorizedError)) {
-          setBoot({ kind: "error", message: err instanceof Error ? err.message : String(err) });
+          // Network error (e.g. backend unreachable after a laptop restart).
+          // This IS recoverable — hand off to the reconnecting overlay, which
+          // uses its backoff-driven reload to keep retrying.
+          setBoot({ kind: "reconnecting" });
           return;
         }
         // 401. Try the stashed token once if we have one and haven't
@@ -74,10 +81,8 @@ export function App() {
           } catch (retryErr) {
             if (cancelled) return;
             if (!(retryErr instanceof UnauthorizedError)) {
-              setBoot({
-                kind: "error",
-                message: retryErr instanceof Error ? retryErr.message : String(retryErr),
-              });
+              // Network error on the retry path — same recovery via overlay.
+              setBoot({ kind: "reconnecting" });
               return;
             }
             // fall through
@@ -89,13 +94,14 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [nonce]);
+  }, [refetchKey]);
 
   if (boot.kind === "loading") return <main class="hero"><div class="hero__delta">loading…</div></main>;
   if (boot.kind === "unpaired") return <PairScreen />;
+  if (boot.kind === "reconnecting") return <ReconnectingOverlay />;
   if (boot.kind === "error") return <main class="hero"><div class="hero__delta">error: {boot.message}</div></main>;
 
-  return <Live initial={boot.initial} onAction={() => setNonce((n) => n + 1)} />;
+  return <Live initial={boot.initial} onAction={() => setRefetchKey((n) => n + 1)} />;
 }
 
 function Live({ initial, onAction }: { initial: LiveState; onAction: () => void }) {

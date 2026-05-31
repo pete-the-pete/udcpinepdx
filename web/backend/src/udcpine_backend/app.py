@@ -214,6 +214,9 @@ def create_app(
     # /api/_test/break-stream and /api/_test/heal-stream routes, which are
     # only registered when UDCPINE_TEST_HOOKS=1. Used by the Playwright
     # reconnect test to assert the ReconnectingOverlay appears and clears.
+    # A plain dict is fine for Flask's dev-server (single process/thread).
+    # Under gunicorn with multiple workers this would need a threading.Event
+    # or a shared-memory primitive — but we're not adding gunicorn yet.
     stream_state: dict[str, bool] = {"broken": False}
 
     @app.get("/api/stream")
@@ -255,14 +258,7 @@ def create_app(
             # Wake any blocked q.get() in open SSE generators so they
             # observe the flag and return. The sentinel is a sub-protocol
             # the generator recognizes (see get_stream above).
-            # pylint: disable=protected-access
-            with s._lock:  # type: ignore[attr-defined]
-                subs = list(s._subscribers)  # type: ignore[attr-defined]
-            for q in subs:
-                try:
-                    q.put_nowait({"__break__": True})
-                except Exception:  # noqa: BLE001
-                    pass
+            s.broadcast_break_sentinel()
             return Response('{"ok":true}', mimetype="application/json")
 
         @app.post("/api/_test/heal-stream")

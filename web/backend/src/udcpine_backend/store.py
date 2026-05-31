@@ -263,6 +263,13 @@ class Store:
             if q in self._subscribers:
                 self._subscribers.remove(q)
 
+    def broadcast_break_sentinel(self) -> None:
+        """Test-only: wake all SSE subscribers with a sentinel that signals
+        them to close the stream. Used by /api/_test/break-stream."""
+        with self._lock:
+            for q in list(self._subscribers):
+                q.put({"__break__": True})
+
     def _broadcast(self, event: dict[str, Any]) -> None:
         with self._lock:
             subs = list(self._subscribers)

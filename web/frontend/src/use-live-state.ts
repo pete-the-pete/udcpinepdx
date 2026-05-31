@@ -22,6 +22,7 @@ function reducer(state: LiveState, action: Action): LiveState {
   }
 }
 
+/** Starts at "connected" because the caller already proved connectivity via fetchState(). */
 export type ConnectionState = "connected" | "reconnecting";
 
 /**
@@ -97,6 +98,8 @@ export function useLiveState(initial: LiveState): {
       clearDebounce();
       es.close();
     };
+    // `initial` is the dep: <Live initial={...}> re-mounts (via the boot-effect's
+    // refetchKey bump) which intentionally tears down and rebuilds the EventSource.
   }, [initial]);
 
   return { state, connectionState };
