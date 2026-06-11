@@ -52,7 +52,8 @@ def ramp_temp_c(*, elapsed_s: float) -> float:
 def ambient_temp_c(*, tick: int) -> float:
     """Pure function: a gently-varying cool reading for an IDLE oven, so the
     start screen shows a live ambient temperature before a firing. Keyed on an
-    integer tick (deterministic, like ``ramp_temp_c``). Stays within ~20-25 °C.
+    integer tick (deterministic, like ``ramp_temp_c``). Bounded to
+    AMBIENT_TEMP_C ± AMBIENT_NOISE_BAND_C (20.0-25.0 °C).
     """
     return AMBIENT_TEMP_C + math.sin(tick * 0.137) * AMBIENT_NOISE_BAND_C
 
