@@ -165,21 +165,23 @@ class Store:
         return ended
 
     def publish_sample(self, *, temp_c: float) -> None:
-        """Record a hearth reading for the active firing. A no-op when the
-        oven is idle — a sample belongs to a firing.
+        """Record a hearth reading. The in-memory latest reading and the SSE
+        broadcast happen on EVERY call — including when the oven is idle — so
+        the start screen can show a live ambient temperature before a firing
+        begins. A persisted ``sample`` row is written only while a firing is
+        active; an idle reading is transient (in-memory only, lost on restart).
 
         Temperature is degrees Celsius. The frontend converts to °F at
         render time; storage and the wire stay metric.
         """
         with self._lock:
-            if self._firing is None:
-                return
             t = self._clock.now()
-            self._conn.execute(
-                "INSERT INTO sample (firing_id, t, temp_c) VALUES (?, ?, ?)",
-                (self._firing.id, t.isoformat(), temp_c),
-            )
-            self._conn.commit()
+            if self._firing is not None:
+                self._conn.execute(
+                    "INSERT INTO sample (firing_id, t, temp_c) VALUES (?, ?, ?)",
+                    (self._firing.id, t.isoformat(), temp_c),
+                )
+                self._conn.commit()
             self._latest_sample = Sample(t=t, temp_c=temp_c)
             event: dict[str, Any] = {
                 "type": "sample",
