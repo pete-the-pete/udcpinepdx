@@ -29,7 +29,18 @@ while true; do
   fi
   # Stage 3: launch and block
   log "launching chromium"
-  chromium --kiosk --noerrdialogs --disable-infobars --no-first-run \
+  # Two Pi-specific flags, both required on a low-RAM board like the Pi Zero
+  # 2 W (512 MB). See plans/ops/2026-06-10-pi-kiosk-low-ram-gpu.md.
+  #   --no-memcheck : Raspberry Pi OS wraps chromium in a script that pops a
+  #     blocking "not recommended … less than 1GB of RAM" dialog on every
+  #     launch. In --kiosk nobody can click "Launch anyway", so the browser
+  #     never navigates and the screen stays blank white. This skips it.
+  #   --disable-gpu : the board's EGL/GLES init fails (eglCreateContext →
+  #     EGL_BAD_ATTRIBUTE) and the GPU process exits, leaving an unpainted
+  #     white surface. Software rendering is reliable and more than enough
+  #     for this near-static dashboard.
+  chromium --no-memcheck --disable-gpu \
+    --kiosk --noerrdialogs --disable-infobars --no-first-run \
     --app="$URL"
   exit_at=$(date +%s)
   # Crash-loop guard: if Chromium exits >3 times within 30s, back off 30s
