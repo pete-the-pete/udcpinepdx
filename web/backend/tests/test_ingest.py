@@ -104,13 +104,14 @@ def test_ingest_happy_path_updates_state_and_sse(paired_client, store) -> None:
     assert state.latest_sample.temp_c == 312.5
 
 
-def test_ingest_without_active_firing_is_silent_204(client, store) -> None:
-    """A sample without a firing is a no-op in the Store (samples belong
-    to firings). The HTTP layer still returns 204 — the Pi shouldn't
-    have to know whether a firing is in progress."""
+def test_ingest_while_idle_returns_204_and_updates_latest(client, store) -> None:
+    """A sample without a firing still returns 204 (the Pi shouldn't have to
+    know whether a firing is in progress), but it now updates the live reading
+    so the start screen can show an ambient temperature before a firing."""
     res = client.post("/api/ingest/sample", json={"temp_c": 200.0})
     assert res.status_code == 204
-    assert store.latest_sample() is None
+    assert store.latest_sample() is not None
+    assert store.latest_sample().temp_c == 200.0
 
 
 def test_ingest_malformed_body_is_422(client) -> None:

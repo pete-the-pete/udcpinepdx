@@ -2,13 +2,9 @@ import { useEffect, useState } from "preact/hooks";
 import type { Firing, LiveState } from "@udcpine/shared";
 import { endFiring, nextPizza } from "../api";
 import { isSampleStale } from "../reduce";
+import { celsiusToFahrenheit } from "../temp";
 import { ChefWidget } from "../chef/ChefWidget";
 import { PairPhoneOverlay } from "./pair-phone-overlay";
-
-// Wire unit is Celsius; the dashboard renders Fahrenheit for the operator.
-function celsiusToFahrenheit(tempC: number): number {
-  return tempC * 9 / 5 + 32;
-}
 
 interface HeroNumberProps {
   state: LiveState & { firing: Firing };

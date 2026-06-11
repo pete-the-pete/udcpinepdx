@@ -122,10 +122,28 @@ def test_publish_sample_updates_latest_sample(db_path) -> None:
     assert s.latest_sample().temp_c == 200.0
 
 
-def test_publish_sample_without_a_firing_is_a_noop(db_path) -> None:
+def test_publish_sample_while_idle_updates_latest_and_broadcasts(db_path) -> None:
     s = Store(db_path, clock=FixedClock(T0))
-    s.publish_sample(temp_c=200.0)  # no active firing
-    assert s.latest_sample() is None
+    q = s.subscribe()
+    s.publish_sample(temp_c=22.0)  # no active firing
+    assert s.latest_sample() is not None
+    assert s.latest_sample().temp_c == 22.0
+    event = q.get(timeout=0.5)
+    assert event["type"] == "sample"
+    assert event["temp_c"] == 22.0
+
+
+def test_publish_sample_while_idle_writes_no_db_row(db_path) -> None:
+    import sqlite3
+
+    s = Store(db_path, clock=FixedClock(T0))
+    s.publish_sample(temp_c=22.0)  # idle: in-memory only, no persisted row
+    conn = sqlite3.connect(db_path)
+    try:
+        [(count,)] = conn.execute("SELECT COUNT(*) FROM sample").fetchall()
+    finally:
+        conn.close()
+    assert count == 0
 
 
 def test_unsubscribe_stops_delivery(db_path) -> None:

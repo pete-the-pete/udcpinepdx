@@ -1,9 +1,13 @@
 import { useState } from "preact/hooks";
+import type { Sample } from "@udcpine/shared";
 import { nextPizza, startFiring } from "../api";
+import { formatHearthTempF } from "../temp";
 import { PairPhoneOverlay } from "./pair-phone-overlay";
 
 interface IdleScreenProps {
   onStarted: () => void;
+  /** Latest hearth reading (ambient when idle), or null before the sensor reports. */
+  latestSample: Sample | null;
 }
 
 /**
@@ -15,7 +19,7 @@ interface IdleScreenProps {
  *
  * Subsequent pizzas use the in-dashboard NEXT PIZZA flow (HeroNumber).
  */
-export function IdleScreen({ onStarted }: IdleScreenProps) {
+export function IdleScreen({ onStarted, latestSample }: IdleScreenProps) {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -58,6 +62,9 @@ export function IdleScreen({ onStarted }: IdleScreenProps) {
       </header>
 
       <section class="idle">
+        <output class="idle__temp" aria-label="current hearth temperature">
+          {formatHearthTempF(latestSample?.temp_c ?? null)}
+        </output>
         <form class="idle__form" onSubmit={onSubmit}>
           <input
             class="idle__name"

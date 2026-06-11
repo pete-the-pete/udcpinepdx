@@ -3,6 +3,7 @@ import type { JSX } from "preact";
 import type { Sample } from "@udcpine/shared";
 import { manifest, type ChefState } from "./manifest";
 import { selectState } from "./state-machine";
+import { formatHearthTempF } from "../temp";
 import "./chef.css";
 
 /**
@@ -144,7 +145,6 @@ export function ChefWidget({ latest_sample }: ChefWidgetProps) {
   const tempC = latest_sample?.temp_c ?? null;
   const state = selectState(tempC, prevState.current, manifest);
   prevState.current = state;
-  const tempF = tempC !== null ? tempC * 9 / 5 + 32 : null;
 
   if (mode === "compact") {
     return (
@@ -170,7 +170,7 @@ export function ChefWidget({ latest_sample }: ChefWidgetProps) {
     >
       <ChefSprite state={state} />
       <div class="chef__temp">
-        {tempF !== null ? `${Math.round(tempF)}°F` : "—"}
+        {formatHearthTempF(tempC)}
       </div>
     </div>
   );

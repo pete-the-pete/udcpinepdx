@@ -4,6 +4,7 @@ import type { Sample } from "@udcpine/shared";
 import { ChefWidget } from "./ChefWidget";
 import { manifest, type ChefState } from "./manifest";
 import { selectState } from "./state-machine";
+import { celsiusToFahrenheit } from "../temp";
 import "../styles.css";
 import "./demo.css";
 
@@ -42,10 +43,6 @@ function tempInSomeBand(tempC: number): boolean {
   });
 }
 
-function toFahrenheit(tempC: number): number {
-  return tempC * 9 / 5 + 32;
-}
-
 function ChefDemo() {
   const [tempC, setTempC] = useState(70);
   const [playing, setPlaying] = useState(false);
@@ -82,7 +79,7 @@ function ChefDemo() {
   const state = selectState(tempC, prevState.current, manifest);
   prevState.current = state;
   const clamped = !tempInSomeBand(tempC);
-  const tempF = Math.round(toFahrenheit(tempC));
+  const tempF = Math.round(celsiusToFahrenheit(tempC));
 
   return (
     <main class="hero">

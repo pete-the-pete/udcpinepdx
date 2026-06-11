@@ -110,7 +110,7 @@ function Live({ initial, onAction }: { initial: LiveState; onAction: () => void 
   if (state.firing === null) {
     return (
       <>
-        <IdleScreen onStarted={onAction} />
+        <IdleScreen onStarted={onAction} latestSample={state.latest_sample} />
         {overlay}
       </>
     );
