@@ -15,11 +15,15 @@ help:
 	@echo "  lint       run all linters"
 	@echo "  dev        run Flask + Vite together (Ctrl-C stops both)"
 	@echo "  serve      build the SPA + serve it from Flask on the LAN (Pi kiosk)"
+	@echo "             (set UDCPINE_BOOTSTRAP_TOKEN in web/backend/.env.local for"
+	@echo "              a stable Pi kiosk URL -- see web/backend/.env.example)"
 	@echo "  e2e        run Playwright end-to-end tests (boots both servers)"
 	@echo "  db-reset   delete the local dev SQLite database"
-	@echo "  pi-build   sync firmware deps for deploy (run on Mac)"
-	@echo "  pi-deploy  rsync firmware/ to PI_HOST and restart the service"
-	@echo "  pi-logs    tail journald for udcpine-firmware on PI_HOST"
+	@echo "  pi-build      sync firmware deps for deploy (run on Mac)"
+	@echo "  pi-deploy     rsync firmware/ to PI_HOST and restart the service"
+	@echo "  pi-logs       tail journald for udcpine-firmware on PI_HOST"
+	@echo "  pi-kiosk-on   deploy kiosk config + activate fullscreen dashboard  (PI_HOST=user@host.local)"
+	@echo "  pi-kiosk-off  remove kiosk autostart + return Pi to normal desktop  (PI_HOST=user@host.local)"
 
 build:
 	bun install

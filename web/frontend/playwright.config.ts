@@ -35,6 +35,10 @@ export default defineConfig({
         UDCPINE_BOOTSTRAP_TOKEN: "e2e-bootstrap-token",
         UDCPINE_DB_PATH: ":memory:",
         UDCPINE_MOCK_SENSOR: "1",
+        // Exposes /api/_test/break-stream + /api/_test/heal-stream so the
+        // reconnect spec can simulate a stream outage. Test-only — see
+        // udcpine_backend/app.py.
+        UDCPINE_TEST_HOOKS: "1",
       },
     },
     {

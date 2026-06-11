@@ -242,6 +242,49 @@ def test_unknown_path_falls_back_to_index(spa_client) -> None:
     assert b"udcpine" in res.data
 
 
+# --- Test-only break/heal hooks (UDCPINE_TEST_HOOKS=1) -----------------
+
+
+def test_test_hooks_404_without_env(client, monkeypatch) -> None:
+    # Default: env not set → routes are not registered.
+    monkeypatch.delenv("UDCPINE_TEST_HOOKS", raising=False)
+    app = create_app(store=Store(":memory:"), auth=AuthStore(bootstrap_token=BOOTSTRAP))
+    c = app.test_client()
+    # Routes aren't registered → Flask's URL map doesn't know POST for them.
+    # The SPA catch-all (GET-only) makes this a 405, not a 404; either way
+    # the contract is "not available" — what matters is no 200.
+    assert c.post("/api/_test/break-stream").status_code in (404, 405)
+    assert c.post("/api/_test/heal-stream").status_code in (404, 405)
+
+
+def test_test_hooks_present_with_env(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("UDCPINE_TEST_HOOKS", "1")
+    app = create_app(
+        store=Store(str(tmp_path / "th.db")),
+        auth=AuthStore(bootstrap_token=BOOTSTRAP),
+    )
+    c = app.test_client()
+    assert c.post("/api/_test/break-stream").status_code == 200
+    assert c.post("/api/_test/heal-stream").status_code == 200
+
+
+def test_stream_returns_503_when_broken(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("UDCPINE_TEST_HOOKS", "1")
+    app = create_app(
+        store=Store(str(tmp_path / "br.db")),
+        auth=AuthStore(bootstrap_token=BOOTSTRAP),
+    )
+    c = app.test_client()
+    c.post("/api/auth/exchange", json={"token": BOOTSTRAP})
+    c.post("/api/_test/break-stream")
+    assert c.get("/api/stream").status_code == 503
+    c.post("/api/_test/heal-stream")
+    # After heal, the route is reachable again (200 + event-stream).
+    res = c.get("/api/stream", buffered=False)
+    assert res.status_code == 200
+    res.close()
+
+
 def test_unknown_api_path_is_404_not_spa(spa_client) -> None:
     # Authorized client so we pass the /api gate and reach the catch-all.
     spa_client.post("/api/auth/exchange", json={"token": BOOTSTRAP})

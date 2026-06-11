@@ -1,7 +1,8 @@
 FIRMWARE_DIR := firmware
 PI_HOST ?=
+LAPTOP_HOST ?= Lawljegrens-M1.local
 
-.PHONY: pi-build pi-deploy pi-logs _pi-require-host
+.PHONY: pi-build pi-deploy pi-logs pi-kiosk-on pi-kiosk-off _pi-require-host
 
 _pi-require-host:
 	@if [ -z "$(PI_HOST)" ]; then \
@@ -21,3 +22,41 @@ pi-deploy: _pi-require-host pi-build
 
 pi-logs: _pi-require-host
 	ssh $(PI_HOST) 'journalctl -u udcpine-firmware -f'
+
+pi-kiosk-on: _pi-require-host
+	@test -f web/backend/.env.local || { \
+		echo "web/backend/.env.local missing — write UDCPINE_BOOTSTRAP_TOKEN there first"; \
+		exit 2; \
+	}
+	@USER=$$(echo "$(PI_HOST)" | cut -d@ -f1); \
+	 TOKEN=$$(grep -E '^UDCPINE_BOOTSTRAP_TOKEN=' web/backend/.env.local \
+	          | cut -d= -f2- | tr -d '\r' | tr -d '"'); \
+	 if ! printf '%s' "$$TOKEN" | grep -Eq '^[A-Za-z0-9_-]+$$'; then \
+	   echo "UDCPINE_BOOTSTRAP_TOKEN must match ^[A-Za-z0-9_-]+$$ (no shell-metachars or whitespace)"; \
+	   exit 2; \
+	 fi; \
+	 URL="http://$(LAPTOP_HOST):5001/?t=$$TOKEN"; \
+	 sed -e "s|__USER__|$$USER|g" -e "s|__KIOSK_URL__|$$URL|g" \
+	   pi/labwc/autostart.kiosk.template > /tmp/autostart.kiosk; \
+	 ssh $(PI_HOST) 'mkdir -p ~/bin ~/.config/labwc'; \
+	 scp pi/kiosk-launcher.sh $(PI_HOST):~/bin/kiosk-launcher.sh; \
+	 ssh $(PI_HOST) 'chmod +x ~/bin/kiosk-launcher.sh'; \
+	 scp /tmp/autostart.kiosk $(PI_HOST):~/.config/labwc/autostart; \
+	 ssh $(PI_HOST) 'chmod 600 ~/.config/labwc/autostart'; \
+	 ssh $(PI_HOST) "pkill chromium 2>/dev/null; loginctl terminate-user $$USER 2>/dev/null; true"; \
+	 echo "waiting up to 5 min for $$USER labwc session to respawn..."; \
+	 ssh $(PI_HOST) "for i in \$$(seq 1 300); do pgrep -u $$USER -x labwc >/dev/null && { echo \"respawned after \$${i}s\"; exit 0; }; sleep 1; done; exit 3" || { \
+	   echo "ERROR: $$USER labwc session did not respawn within 5 min after terminate-user."; \
+	   echo "       Recover with: ssh $(PI_HOST) sudo systemctl restart getty@tty1"; \
+	   exit 3; \
+	 }
+
+pi-kiosk-off: _pi-require-host
+	@USER=$$(echo "$(PI_HOST)" | cut -d@ -f1); \
+	 ssh $(PI_HOST) "rm -f ~/.config/labwc/autostart; pkill chromium 2>/dev/null; loginctl terminate-user $$USER 2>/dev/null; true"; \
+	 echo "waiting up to 5 min for $$USER labwc session to respawn (kiosk autostart removed)..."; \
+	 ssh $(PI_HOST) "for i in \$$(seq 1 300); do pgrep -u $$USER -x labwc >/dev/null && { echo \"respawned after \$${i}s\"; exit 0; }; sleep 1; done; exit 3" || { \
+	   echo "ERROR: $$USER labwc session did not respawn within 5 min after terminate-user."; \
+	   echo "       Recover with: ssh $(PI_HOST) sudo systemctl restart getty@tty1"; \
+	   exit 3; \
+	 }
