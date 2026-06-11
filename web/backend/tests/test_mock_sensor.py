@@ -32,3 +32,40 @@ def test_ramp_is_monotonic_in_ramp_phase() -> None:
 def test_ramp_is_deterministic() -> None:
     # Same input -> same output, every call. Noise is keyed off elapsed_s.
     assert ramp_temp_c(elapsed_s=750) == ramp_temp_c(elapsed_s=750)
+
+
+def test_ambient_is_within_band() -> None:
+    from udcpine_backend.mock_sensor import ambient_temp_c
+
+    for tick in range(0, 100):
+        v = ambient_temp_c(tick=tick)
+        assert 20.0 <= v <= 25.0, f"out-of-band at tick={tick}: {v}"
+
+
+def test_ambient_is_deterministic() -> None:
+    from udcpine_backend.mock_sensor import ambient_temp_c
+
+    assert ambient_temp_c(tick=7) == ambient_temp_c(tick=7)
+
+
+def test_thread_publishes_ambient_while_idle(tmp_path) -> None:
+    """The mock thread, with no active firing, publishes ambient readings so
+    the idle screen shows a number in dev/demo. Condition-based wait — poll
+    for the reading rather than sleeping a fixed interval."""
+    import time
+
+    from udcpine_backend.mock_sensor import MockSensorThread
+    from udcpine_backend.store import Store
+
+    store = Store(str(tmp_path / "mock.db"))
+    thread = MockSensorThread(store, interval_s=0.01)
+    thread.start()
+    try:
+        deadline = time.monotonic() + 2.0
+        while store.latest_sample() is None and time.monotonic() < deadline:
+            time.sleep(0.01)
+    finally:
+        thread.stop()
+        thread.join(timeout=1.0)
+    assert store.latest_sample() is not None
+    assert 20.0 <= store.latest_sample().temp_c <= 25.0
