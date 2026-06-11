@@ -62,9 +62,9 @@ export function IdleScreen({ onStarted, latestSample }: IdleScreenProps) {
       </header>
 
       <section class="idle">
-        <p class="idle__temp" aria-label="current hearth temperature">
+        <output class="idle__temp" aria-label="current hearth temperature">
           {formatHearthTempF(latestSample?.temp_c ?? null)}
-        </p>
+        </output>
         <form class="idle__form" onSubmit={onSubmit}>
           <input
             class="idle__name"

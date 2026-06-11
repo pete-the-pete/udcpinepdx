@@ -148,6 +148,7 @@ body { min-height: 100dvh; }
 }
 .idle__caption { color: var(--ink-soft); font-size: 14px; letter-spacing: 4px; }
 .idle__temp {
+  display: block;
   margin: 0 0 4px;
   color: var(--ink-soft);
   font-size: 32px;
