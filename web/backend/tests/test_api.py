@@ -53,6 +53,14 @@ def test_get_state_when_idle(paired_client) -> None:
     assert state.active_pizza is None
 
 
+def test_get_state_after_idle_ingest_has_reading(paired_client) -> None:
+    paired_client.post("/api/ingest/sample", json={"temp_c": 22.5})
+    state = LiveState.model_validate(json.loads(paired_client.get("/api/state").data))
+    assert state.firing is None
+    assert state.latest_sample is not None
+    assert state.latest_sample.temp_c == 22.5
+
+
 def test_post_start_returns_active_firing(paired_client) -> None:
     res = paired_client.post("/api/firing/start")
     assert res.status_code == 200
