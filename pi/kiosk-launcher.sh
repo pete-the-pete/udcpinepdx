@@ -15,10 +15,14 @@ while true; do
     until getent hosts "$HOST" >/dev/null 2>&1; do sleep 1; done
     log "hostname $HOST resolved"
   fi
-  # Stage 2: backend reachable
-  if ! curl -fsS --max-time 2 "http://${HOST}:5001/api/state" >/dev/null 2>&1; then
+  # Stage 2: backend reachable.
+  # Probe the SPA root (/), not /api/* — every /api/* route requires auth
+  # and 401s on a fresh launcher boot, which would loop forever under
+  # `curl -f`. `make serve` always builds the SPA before starting Flask,
+  # so / returning 200 is the right "ready to hand a URL to Chromium" signal.
+  if ! curl -fsS --max-time 2 "http://${HOST}:5001/" >/dev/null 2>&1; then
     log "waiting for backend at $HOST:5001"
-    until curl -fsS --max-time 2 "http://${HOST}:5001/api/state" >/dev/null 2>&1; do
+    until curl -fsS --max-time 2 "http://${HOST}:5001/" >/dev/null 2>&1; do
       sleep 1
     done
     log "backend reachable"
