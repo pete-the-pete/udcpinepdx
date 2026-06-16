@@ -19,7 +19,7 @@ vehicle for **OAuth** (the security learning goal).
 
 | Decision | Choice |
 |---|---|
-| **Auth to Google** | **OAuth installed-app ("Desktop app") flow**, consent screen set to **Internal** (treehouse.pro-only) so refresh tokens don't expire. *Service-account keys are blocked by the org policy `iam.disableServiceAccountKeyCreation`, so the keyless OAuth path is used instead.* Libraries: `gspread` + `google-auth` (runtime) and `google-auth-oauthlib` (one-time token mint). |
+| **Auth to Google** | **OAuth installed-app ("Desktop app") flow** owned by a personal gmail account (`pliljegr@gmail.com`). Consent screen is **External** with publishing status **In production**, so the refresh token does not hit the 7-day "Testing" expiry. *Service-account keys were blocked by the treehouse.pro org policy `iam.disableServiceAccountKeyCreation`, so the keyless OAuth path is used instead.* Libraries: `gspread` + `google-auth` (runtime) and `google-auth-oauthlib` (one-time token mint). |
 | **Trigger** | Automatic on `POST /api/firing/stop`. Fire-and-forget; export failure must never fail the stop. |
 | **Content** | (1) `Firings` summary tab — one row per firing, (2) `Pizzas` tab — one row per pizza, (3) one `firing-<id>` detail tab per firing with the **full 1 Hz** temp series. |
 | **Temp layout** | One detail tab per firing. |
@@ -31,10 +31,16 @@ vehicle for **OAuth** (the security learning goal).
   refresh token + the client id/secret, scope `.../auth/spreadsheets`).
 - That file is copied to the Pi. At runtime the backend loads it, auto-refreshes
   the short-lived access token as needed, and never needs a browser again.
-- Because the consent screen is **Internal** to the treehouse.pro Workspace, the
-  refresh token does **not** hit the 7-day "Testing" expiry — it stays valid
-  indefinitely. *(Teaching note: this is why Internal matters; an External app in
-  Testing status would force re-consent weekly.)*
+- The consent screen is **External** (the integration is owned by a personal
+  gmail account, which is not a member of any Workspace org — so **Internal**
+  rejects it with `403 org_internal`). Publishing status must be **In production**:
+  a refresh token from an app still in **Testing** expires after **7 days**, while
+  a published app's token stays valid indefinitely. *(Teaching note: "Internal"
+  means "a member of the project's Cloud org," not "the person at the keyboard" —
+  that's the trap we hit first.)*
+- The Sheets scope is **sensitive** (not restricted), so a self-use published app
+  shows a one-time "Google hasn't verified this app" warning you click past; no
+  Google verification is required for a single user.
 - `authorized_user.json` is a secret (holds the refresh token). It is `chmod 600`
   on the Pi and git-ignored, same handling a key file would get.
 
@@ -138,16 +144,19 @@ functions, unit-tested.
 1. **Project + API** — at https://console.cloud.google.com create a project (e.g.
    `udcpine-sheets`); **APIs & Services → Library → Google Sheets API → Enable**.
 2. **Consent screen** — **APIs & Services → OAuth consent screen** → **User type =
-   Internal** → fill app name/support email → add scope
-   `https://www.googleapis.com/auth/spreadsheets` → Save.
+   External** → fill app name/support email → add scope
+   `https://www.googleapis.com/auth/spreadsheets` → add `pliljegr@gmail.com` under
+   **Test users** → Save. Then set **Publishing status → In production** so the
+   minted refresh token does not expire after 7 days.
 3. **OAuth client** — **Credentials → Create Credentials → OAuth client ID →
    Application type = Desktop app** → download the `client_secret_*.json`.
 4. **Mint the token (laptop)** — run `web/backend/scripts/sheets_oauth_bootstrap.py`
-   pointed at that client-secret file; a browser opens, you consent as your
-   treehouse.pro user, and it writes `authorized_user.json`.
-5. **Spreadsheet** — create a Google Sheet; copy its ID from the URL
-   (`.../spreadsheets/d/<ID>/edit`). Because OAuth acts **as you**, no sharing
-   step is needed — you already own it.
+   pointed at that client-secret file; a browser opens, you consent as
+   `pliljegr@gmail.com` (click past the one-time "unverified app" warning), and it
+   writes `authorized_user.json`.
+5. **Spreadsheet** — create a Google Sheet **in that same gmail account**; copy its
+   ID from the URL (`.../spreadsheets/d/<ID>/edit`). Because OAuth acts **as you**,
+   no sharing step is needed — you already own it.
 6. **Install on the Pi** — copy `authorized_user.json` to the Pi (`chmod 600`),
    set `UDCPINE_SHEETS_OAUTH_TOKEN=<path>` and `UDCPINE_SHEETS_SPREADSHEET_ID=<id>`.
 

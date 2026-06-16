@@ -3,13 +3,17 @@
 
 Run this on a **laptop with a browser** — not the Pi. It runs the installed-app
 ("Desktop") consent flow against the OAuth client secret you downloaded from the
-Google Cloud Console, opens a browser for you to consent as your treehouse.pro
-user, and writes an ``authorized_user.json`` holding the long-lived refresh
-token. Copy that file to the Pi and point ``UDCPINE_SHEETS_OAUTH_TOKEN`` at it.
+Google Cloud Console, opens a browser for you to grant the Sheets scope, and
+writes an ``authorized_user.json`` holding the refresh token. Copy that file to
+the Pi and point ``UDCPINE_SHEETS_OAUTH_TOKEN`` at it.
 
-Because the OAuth consent screen is **Internal** to the Workspace, the refresh
-token does not hit the 7-day "Testing" expiry — it stays valid indefinitely, so
-this is genuinely a one-time step.
+The OAuth consent screen must be **External** with publishing status **In
+production**. "Internal" only admits members of the project's Workspace org; a
+personal @gmail account is not one, so it is rejected with ``403 org_internal``.
+"In production" matters because a refresh token from an app still in "Testing"
+expires after 7 days — published, it stays valid indefinitely. You consent past a
+one-time "Google hasn't verified this app" warning (expected for the sensitive
+Sheets scope on a self-use app).
 
 Usage (from web/backend/):
 
