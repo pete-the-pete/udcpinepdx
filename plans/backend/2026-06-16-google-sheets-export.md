@@ -141,8 +141,13 @@ functions, unit-tested.
 
 ## One-time Google Cloud / OAuth setup (manual, human steps)
 
-1. **Project + API** — at https://console.cloud.google.com create a project (e.g.
-   `udcpine-sheets`); **APIs & Services → Library → Google Sheets API → Enable**.
+1. **Project + API** — create the project signed in as **only** the personal gmail
+   account (e.g. an Incognito window with just `pliljegr@gmail.com`) so it lands
+   under **"No organization"**, *not* a Workspace org. A project created under the
+   treehouse.pro org forces an "Internal" consent screen that rejects the gmail
+   account with `403 org_internal` — the org is fixed at creation time and can't
+   be re-parented later. Confirm the create form's parent shows *No organization*,
+   then **APIs & Services → Library → Google Sheets API → Enable**.
 2. **Consent screen** — **APIs & Services → OAuth consent screen** → **User type =
    External** → fill app name/support email → add scope
    `https://www.googleapis.com/auth/spreadsheets` → add `pliljegr@gmail.com` under
