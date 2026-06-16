@@ -37,6 +37,9 @@ secrets/
 *.p12
 *.pfx
 .playwright-mcp/
+# Google Sheets OAuth (minted by scripts/sheets_oauth_bootstrap.py — never commit)
+authorized_user.json
+client_secret*.json
 
 # ---- OS ----
 .DS_Store
