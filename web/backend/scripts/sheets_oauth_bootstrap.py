@@ -25,7 +25,11 @@ from pathlib import Path
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-from udcpine_backend.sheets import SCOPES
+# Kept in sync by hand with udcpine_backend.sheets.SCOPES. Inlined rather than
+# imported so this one-off script does not require the backend package (and its
+# generated.pydantic import) to be on the path — you only need
+# google-auth-oauthlib, i.e. run it with `uv run` from web/backend/.
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 
 def main() -> None:
