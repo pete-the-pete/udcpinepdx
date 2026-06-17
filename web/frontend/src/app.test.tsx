@@ -51,6 +51,7 @@ describe("App boot flow", () => {
         firing: null,
         latest_sample: null,
         active_pizza: null,
+        cooking_started_at: null,
       });
 
       globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -127,6 +128,7 @@ describe("App boot flow", () => {
         firing: null,
         latest_sample: null,
         active_pizza: null,
+        cooking_started_at: null,
       });
 
       let exchangeCallCount = 0;
