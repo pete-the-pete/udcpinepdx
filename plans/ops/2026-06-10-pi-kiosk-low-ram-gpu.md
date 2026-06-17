@@ -79,3 +79,107 @@ This re-copies `kiosk-launcher.sh` and respawns the session. Verify with a
 - The crash-loop backoff in the launcher (3 exits / 30 s → 30 s sleep) was
   *not* the issue here — Chromium wasn't crash-looping, it was parked. No change
   needed there.
+
+---
+
+# Amendment 2026-06-16: blank white returns on Chromium 149
+
+**Status:** fixed in `pi/kiosk-launcher.sh`.
+
+## Symptom
+
+After an unattended `apt full-upgrade` (Chromium **147 → 148 → 149**, kernel
+**6.12 → 6.18**, labwc **0.9.2 → 0.9.7**, mesa/libcamera), the kiosk went blank
+white again. The `--no-memcheck --disable-gpu` fix above was still deployed and
+correct — so this was a *new* regression, not the old bug returning.
+
+## Root cause — the board is too slow to start multi-process Chromium
+
+This time it was **not** GPU. Chromium 149 launches healthy: no memory dialog,
+**no EGL/GPU errors at all**, the renderer runs, and DevTools `Page.navigate`
+renders the full dashboard perfectly (proven via `Page.captureScreenshot`). The
+page, JS, renderer, and GPU are all fine — and a *warm* navigation always works.
+Only the **cold-start `--app` navigation at boot** fails to paint.
+
+The log (`--enable-logging=stderr`) names it:
+
+```
+INFO:  Terminating current process after 15 seconds with no connection.
+ERROR: Network service crashed or was terminated, restarting service.
+```
+
+The Pi Zero 2 W is so CPU/RAM-starved at cold boot that the **browser process
+can't wire up its child processes within Chromium's internal 15 s Mojo-IPC
+connection timeout**. The network-service child gives up waiting and
+self-terminates; that kills the in-flight `--app` navigation, and Chromium never
+retries → a permanent blank page. (Same multi-process IPC starvation that makes
+`--headless=new` fail with zygote errors on this board.)
+
+This was a **heisenbug**: `--enable-logging=stderr --v=1` slowed startup enough
+that the handshake beat the timeout, so verbose-logging boots "worked" while
+quiet boots went blank — which sent the early investigation chasing GPU,
+profile, SwiftShader, and keyring red herrings.
+
+## Fix
+
+The single load-bearing flag added to the `chromium` line in
+`pi/kiosk-launcher.sh`:
+
+- **`--single-process`** *(the fix)* — run the browser, renderer, GPU, and
+  network code in one process. No child processes means no Mojo-IPC handshake
+  and nothing to time out, so the boot navigation commits every time. Fine for
+  a single static dashboard, and lighter on RAM. The launcher's crash-loop
+  guard is the backstop if the one process dies.
+
+Supporting flags (quality-of-life / hardening, not the core fix):
+
+- **`--password-store=basic`** — don't use the GNOME login keyring for the Safe
+  Storage key. Stops the per-boot "unlock keyring" **password prompt** (which a
+  keyboard-attached boot shows, and which can itself block). Key lives in the
+  profile instead; fine since the kiosk holds only a LAN session cookie.
+- **`--disable-background-networking --disable-component-update`** — a kiosk on
+  one LAN dashboard needs none of Chromium's first-run traffic; removing it
+  trims startup load and SD churn.
+- **`--user-data-dir=/tmp/udcpine-kiosk-profile`**, wiped before each launch —
+  small, upgrade-proof profile.
+
+SwiftShader (`--use-angle=swiftshader`), tried during the investigation, was
+**dropped**: plain `--disable-gpu` software rendering paints fine once
+`--single-process` lets the nav commit.
+
+## How it was found
+
+A controlled, evidence-first probe after many blind flag guesses (GPU,
+SwiftShader, ephemeral profile, keyring) each failed to fix the blank screen:
+
+1. Attach DevTools to the live (non-headless) browser over a temporary
+   `--remote-debugging-port`; `Page.navigate` + `Page.captureScreenshot` proved
+   the renderer was perfect and the page simply never navigated at boot —
+   relocating the bug from "rendering" to "startup".
+2. Notice verbose logging made it boot but quiet runs didn't → a timing race.
+   Re-run with **error-only** `--enable-logging=stderr` (minimal slowdown) to
+   reproduce the failure *and* capture it: the "15 seconds with no connection"
+   child-process timeout and network-service termination.
+3. `--single-process` removes the multi-process startup entirely → fixed.
+
+> Note: `--headless=new` is **broken** on this board (same IPC starvation,
+> zygote errors), so headless rendering is not a usable diagnostic here — drive
+> the real browser.
+
+> Security: the `--remote-debugging-port`/`--remote-allow-origins=*` flags used
+> during diagnosis are an unauthenticated debug surface and were **removed**
+> before commit. They must never ship in the kiosk launcher.
+
+## Deploy / verify
+
+```sh
+make pi-kiosk-on PI_HOST=mrgrumpy@mrgrumpy.local
+```
+
+Verify the kiosk boots straight to the dashboard with **no** keyring prompt and
+no blank screen (`grim` screenshot, or watch the physical display).
+
+> Be patient: `--single-process` software rendering on the Pi Zero 2 W takes
+> **~2 minutes** from session start to first paint. The screen sits on the
+> desktop/blank during that window — that's normal cold-boot slowness, not a
+> failure. It boots once and stays up.

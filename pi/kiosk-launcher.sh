@@ -29,19 +29,58 @@ while true; do
   fi
   # Stage 3: launch and block
   log "launching chromium"
-  # Two Pi-specific flags, both required on a low-RAM board like the Pi Zero
-  # 2 W (512 MB). See plans/ops/2026-06-10-pi-kiosk-low-ram-gpu.md.
+  # Ephemeral profile: a fresh --user-data-dir every launch. Keeps the profile
+  # small (no accumulated cache) on the low-RAM board and means a Chromium
+  # upgrade can never leave a stale per-profile cache behind. Wiped *before*
+  # launch so it self-heals even if the script was killed mid-run.
+  profile=/tmp/udcpine-kiosk-profile
+  rm -rf "$profile"
+  # Flags tuned for a low-RAM board (Pi Zero 2 W, 512 MB) running desktop
+  # Chromium in kiosk mode. See plans/ops/2026-06-10-pi-kiosk-low-ram-gpu.md.
   #   --no-memcheck : Raspberry Pi OS wraps chromium in a script that pops a
   #     blocking "not recommended … less than 1GB of RAM" dialog on every
   #     launch. In --kiosk nobody can click "Launch anyway", so the browser
   #     never navigates and the screen stays blank white. This skips it.
-  #   --disable-gpu : the board's EGL/GLES init fails (eglCreateContext →
-  #     EGL_BAD_ATTRIBUTE) and the GPU process exits, leaving an unpainted
-  #     white surface. Software rendering is reliable and more than enough
-  #     for this near-static dashboard.
+  #   --single-process : THE fix for the Chromium-149 blank-white kiosk. The
+  #     board is too slow to wire up Chromium's multi-process architecture
+  #     within its internal 15 s child-process IPC timeout: at cold boot the
+  #     network-service child times out waiting for a Mojo connection from the
+  #     browser and self-terminates ("Terminating ... after 15 seconds with no
+  #     connection" → "Network service crashed or was terminated"), which kills
+  #     the in-flight --app navigation and leaves a permanent blank page. One
+  #     process means no IPC handshake and nothing to time out; the boot nav
+  #     commits every time. Fine for a single static dashboard, and lighter on
+  #     RAM. (The crash-loop guard below is the backstop if the one process
+  #     dies.)
+  #   --disable-gpu : force software rendering. The board's hardware EGL/GLES
+  #     path is unreliable across Chromium upgrades and isn't needed for this
+  #     near-static dashboard. (Plain software rendering is enough — no
+  #     SwiftShader/ANGLE override required once --single-process is in play.)
+  #   --password-store=basic : do NOT use the GNOME login keyring (Secret
+  #     Service) for Chromium's "Safe Storage" key. On a fresh profile Chromium
+  #     asks gnome-keyring to unlock the password-protected login keyring and
+  #     pops a modal unlock dialog — a prompt on every boot (and a block if no
+  #     keyboard is attached). basic keeps the key in a file in the profile
+  #     instead. Acceptable here: the kiosk stores only a LAN session cookie,
+  #     and the profile is ephemeral (wiped every boot) anyway.
+  #   --disable-background-networking / --disable-component-update : a kiosk on
+  #     one LAN dashboard needs none of Chromium's first-run traffic (component
+  #     downloads, update pings, optimization-guide fetches). Disabling it
+  #     removes that startup storm and saves RAM/CPU/SD churn on the low-RAM
+  #     board.
+  #   --user-data-dir : the ephemeral profile described above.
+  #
+  # Redirect Chromium's stdout/stderr to /dev/null: inherited from the labwc
+  # autostart those fds are an undrained pipe, and a chatty Chromium can block
+  # on a full write buffer. /dev/null never blocks. (Swap for a real file when
+  # debugging.)
   chromium --no-memcheck --disable-gpu \
+    --single-process \
+    --disable-background-networking --disable-component-update \
+    --password-store=basic \
+    --user-data-dir="$profile" \
     --kiosk --noerrdialogs --disable-infobars --no-first-run \
-    --app="$URL"
+    --app="$URL" >/dev/null 2>&1
   exit_at=$(date +%s)
   # Crash-loop guard: if Chromium exits >3 times within 30s, back off 30s
   # and log once. Otherwise relaunch quietly after 2s. Keeps journald sane
