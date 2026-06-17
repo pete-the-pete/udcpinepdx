@@ -134,12 +134,24 @@
               "type": "null"
             }
           ]
+        },
+        "cooking_started_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
         "firing",
         "latest_sample",
-        "active_pizza"
+        "active_pizza",
+        "cooking_started_at"
       ],
       "additionalProperties": false
     },
