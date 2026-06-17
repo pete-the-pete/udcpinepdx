@@ -8,11 +8,6 @@ if (typeof (globalThis as { document?: unknown }).document === "undefined") {
 }
 
 // ChefStage and ChefWidget use Vite's `import.meta.glob` for sprite-sheet
-// discovery, which Bun doesn't implement. Stub it on import.meta globally
-// so ChefStage can load (and be tested directly), then stub ChefWidget for
-// tests that render the full app where sprite rendering is irrelevant.
-
-// ChefStage and ChefWidget use Vite's `import.meta.glob` for sprite-sheet
 // discovery, which Bun doesn't implement. Stub the sheet-urls module (the
 // extracted glob wrapper) and stub ChefWidget for tests that render the full
 // app where sprite rendering is irrelevant.

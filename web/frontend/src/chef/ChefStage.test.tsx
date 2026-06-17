@@ -6,7 +6,10 @@ import path from "node:path";
 const sheetUrlsAbs = path.resolve(import.meta.dir, "sheet-urls.ts");
 mock.module(sheetUrlsAbs, () => ({ sheetUrls: {} }));
 
-// Dynamic import so the mock is registered first.
+// Dynamic import so the mock above is registered first. Do NOT convert this
+// to a static top-of-file import: it would hoist above mock.module, load the
+// real sheet-urls.ts (whose import.meta.glob is undefined under Bun), and
+// crash the suite.
 const { ChefStage } = await import("./ChefStage");
 
 describe("ChefStage", () => {
