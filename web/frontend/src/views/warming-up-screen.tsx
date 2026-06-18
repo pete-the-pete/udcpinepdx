@@ -48,7 +48,9 @@ export function WarmingUpScreen({ firing, latestSample, onAction }: WarmingUpScr
     try {
       await nextPizza(name.trim());
       onAction();
-    } finally {
+    } catch {
+      // On success the screen routes away (unmounts); only re-enable the
+      // form if the pizza failed to start. Mirrors onCancel below.
       setBusy(false);
     }
   }
