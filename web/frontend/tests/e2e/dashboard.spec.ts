@@ -17,18 +17,27 @@ test("pair → start → live temp climbs → stop → idle", async ({ page }) =
   // --- idle --------------------------------------------------------------
   const startButton = page.getByRole("button", { name: "START FIRING" });
   await expect(startButton).toBeVisible();
-  // The first pizza name is required; START is disabled until one is typed.
-  await expect(startButton).toBeDisabled();
-
-  // --- start -------------------------------------------------------------
-  const nameInput = page.getByRole("textbox", { name: "first pizza name" });
-  await nameInput.fill("Margherita");
+  // Idle screen has no name input; START FIRING is immediately enabled.
   await expect(startButton).toBeEnabled();
+
+  // --- light the fire → warming-up screen --------------------------------
   await startButton.click();
+  // Warm-up screen: header says "WARMING UP · …" and shows the first-pizza form.
+  await expect(page.getByText(/WARMING UP/)).toBeVisible();
+  const nameInput = page.getByRole("textbox", { name: "first pizza name" });
+  await expect(nameInput).toBeVisible();
+  // START FIRST PIZZA is disabled until a name is typed.
+  const startFirstPizza = page.getByRole("button", { name: "START FIRST PIZZA" });
+  await expect(startFirstPizza).toBeDisabled();
+
+  // --- name the first pizza and start cooking ----------------------------
+  await nameInput.fill("Margherita");
+  await expect(startFirstPizza).toBeEnabled();
+  await startFirstPizza.click();
   await expect(page.getByText(/FIRING #\d+ · ACTIVE/)).toBeVisible();
   const stopButton = page.getByRole("button", { name: "stop firing" });
   await expect(stopButton).toBeVisible();
-  // The first pizza name flowed into state 2 — the card shows it.
+  // The first pizza name flowed from warm-up → cooking — the card shows it.
   await expect(page.locator(".pizza-card__name")).toHaveText("Margherita");
 
   // --- live temperature climbs ------------------------------------------
