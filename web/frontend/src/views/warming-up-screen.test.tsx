@@ -37,6 +37,20 @@ describe("WarmingUpScreen", () => {
     expect(nextPizza).toHaveBeenCalledWith("margherita");
   });
 
+  test("a failed Start first pizza shows an error and re-enables the form", async () => {
+    const onAction = mock(() => {});
+    nextPizza.mockImplementationOnce(async () => {
+      throw new Error("no active firing");
+    });
+    render(<WarmingUpScreen firing={FIRING} latestSample={null} onAction={onAction} />);
+    fireEvent.input(screen.getByLabelText(/first pizza name/i), { target: { value: "margherita" } });
+    fireEvent.click(screen.getByRole("button", { name: /start first pizza/i }));
+    await waitFor(() => expect(screen.getByText(/no active firing/i)).toBeDefined());
+    expect(onAction).not.toHaveBeenCalled();
+    // form re-enabled after the failure (button shows its idle label again)
+    expect(screen.getByRole("button", { name: /start first pizza/i })).toBeDefined();
+  });
+
   test("Cancel calls endFiring then onAction", async () => {
     const onAction = mock(() => {});
     render(<WarmingUpScreen firing={FIRING} latestSample={null} onAction={onAction} />);

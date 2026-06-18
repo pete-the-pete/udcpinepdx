@@ -38,6 +38,7 @@ export function WarmingUpScreen({ firing, latestSample, onAction }: WarmingUpScr
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const elapsed = formatMS(now - Date.parse(firing.started_at));
   const canStart = name.trim().length > 0 && !busy && !cancelBusy;
 
@@ -45,12 +46,14 @@ export function WarmingUpScreen({ firing, latestSample, onAction }: WarmingUpScr
     e.preventDefault();
     if (!canStart) return;
     setBusy(true);
+    setErr(null);
     try {
       await nextPizza(name.trim());
       onAction();
-    } catch {
+    } catch (e) {
       // On success the screen routes away (unmounts); only re-enable the
-      // form if the pizza failed to start. Mirrors onCancel below.
+      // form (and surface the error) if the pizza failed to start.
+      setErr(e instanceof Error ? e.message : String(e));
       setBusy(false);
     }
   }
@@ -58,10 +61,12 @@ export function WarmingUpScreen({ firing, latestSample, onAction }: WarmingUpScr
   async function onCancel() {
     if (cancelBusy) return;
     setCancelBusy(true);
+    setErr(null);
     try {
       await endFiring();
       onAction();
-    } catch {
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
       setCancelBusy(false);
     }
   }
@@ -96,7 +101,7 @@ export function WarmingUpScreen({ firing, latestSample, onAction }: WarmingUpScr
             placeholder="first pizza name"
             value={name}
             onInput={(e) => setName((e.target as HTMLInputElement).value)}
-            disabled={busy}
+            disabled={busy || cancelBusy}
             aria-label="first pizza name"
             autofocus
           />
@@ -105,6 +110,7 @@ export function WarmingUpScreen({ firing, latestSample, onAction }: WarmingUpScr
           </button>
         </form>
         <p class="idle__caption">name your first pizza when the hearth is hot</p>
+        {err !== null && <p class="idle__error">error: {err}</p>}
       </section>
     </main>
   );
