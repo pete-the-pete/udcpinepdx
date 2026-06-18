@@ -166,3 +166,51 @@ describe("App boot flow", () => {
     },
   );
 });
+
+describe("App routing", () => {
+  let originalES: typeof EventSource;
+
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.history.replaceState({}, "", "/");
+    originalES = globalThis.EventSource;
+    (globalThis as unknown as { EventSource: typeof EventSource }).EventSource =
+      NoopEventSource as unknown as typeof EventSource;
+  });
+
+  afterEach(() => {
+    cleanup();
+    window.sessionStorage.clear();
+    (globalThis as unknown as { EventSource: typeof EventSource }).EventSource =
+      originalES;
+  });
+
+  async function bootWith(stateBody: object) {
+    window.sessionStorage.setItem(BOOTSTRAP_TOKEN_KEY, "abc");
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url === "/api/state") return new Response(JSON.stringify(stateBody), { status: 200 });
+      if (url === "/api/auth/exchange") return new Response('{"ok":true}', { status: 200 });
+      throw new Error(`unexpected fetch: ${url}`);
+    }) as unknown as typeof fetch;
+    render(<App />);
+  }
+
+  const FIRING = { id: 1, started_at: "2026-06-16T00:00:00Z", ended_at: null, status: "active" };
+  const PIZZA = { id: 1, firing_id: 1, seq: 1, name: "margherita", started_at: "2026-06-16T00:05:00Z", ended_at: null };
+
+  test("routes to IdleScreen when firing is null", async () => {
+    await bootWith({ firing: null, latest_sample: null, active_pizza: null, cooking_started_at: null });
+    await waitFor(() => expect(screen.getByRole("button", { name: /start firing/i })).toBeDefined());
+  });
+
+  test("routes to WarmingUpScreen when firing active and cooking_started_at is null", async () => {
+    await bootWith({ firing: FIRING, latest_sample: null, active_pizza: null, cooking_started_at: null });
+    await waitFor(() => expect(screen.getByText(/warming up/i)).toBeDefined());
+  });
+
+  test("routes to the cooking dashboard when cooking_started_at is set", async () => {
+    await bootWith({ firing: FIRING, latest_sample: null, active_pizza: PIZZA, cooking_started_at: PIZZA.started_at });
+    await waitFor(() => expect(screen.getByText(/degrees fahrenheit/i)).toBeDefined());
+  });
+});
