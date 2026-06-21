@@ -24,6 +24,8 @@ help:
 	@echo "  pi-logs       tail journald for udcpine-firmware on PI_HOST"
 	@echo "  pi-kiosk-on   deploy kiosk config + activate fullscreen dashboard  (PI_HOST=user@host.local)"
 	@echo "  pi-kiosk-off  remove kiosk autostart + return Pi to normal desktop  (PI_HOST=user@host.local)"
+	@echo "  pi-poweroff   shut down the Pi (and the kiosk)                      (PI_HOST=user@host.local)"
+	@echo "  pi-reboot     reboot the Pi                                        (PI_HOST=user@host.local)"
 
 build:
 	bun install

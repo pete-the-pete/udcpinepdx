@@ -2,7 +2,7 @@ FIRMWARE_DIR := firmware
 PI_HOST ?=
 LAPTOP_HOST ?= Lawljegrens-M1.local
 
-.PHONY: pi-build pi-deploy pi-logs pi-kiosk-on pi-kiosk-off _pi-require-host
+.PHONY: pi-build pi-deploy pi-logs pi-kiosk-on pi-kiosk-off pi-poweroff pi-reboot _pi-require-host
 
 _pi-require-host:
 	@if [ -z "$(PI_HOST)" ]; then \
@@ -60,3 +60,19 @@ pi-kiosk-off: _pi-require-host
 	   echo "       Recover with: ssh $(PI_HOST) sudo systemctl restart getty@tty1"; \
 	   exit 3; \
 	 }
+
+# Power-control for a headless Pi. `ssh -t` allocates a tty so sudo can prompt
+# for a password if poweroff/reboot isn't NOPASSWD; `|| true` swallows the
+# expected non-zero exit when the connection drops as the Pi goes down.
+# pi-poweroff fully shuts the Pi down (so it also stops the kiosk); to come
+# back you must re-power it physically. pi-reboot cycles it (the kiosk
+# autostarts again if pi-kiosk-on was set).
+pi-poweroff: _pi-require-host
+	@echo "Powering off $(PI_HOST) — the kiosk and the Pi will shut down."
+	@ssh -t $(PI_HOST) 'sudo poweroff' || true
+	@echo "Shutdown initiated; the Pi will drop off the network. Re-power it physically to bring it back."
+
+pi-reboot: _pi-require-host
+	@echo "Rebooting $(PI_HOST)..."
+	@ssh -t $(PI_HOST) 'sudo reboot' || true
+	@echo "Reboot initiated; the Pi will come back on its own (the kiosk autostarts if pi-kiosk-on was set)."
