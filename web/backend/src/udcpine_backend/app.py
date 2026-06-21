@@ -137,7 +137,12 @@ def create_app(
         firing = s.firing()
         sample = s.latest_sample()
         pizza = s.active_pizza()
-        state = LiveState(firing=firing, latest_sample=sample, active_pizza=pizza)
+        state = LiveState(
+            firing=firing,
+            latest_sample=sample,
+            active_pizza=pizza,
+            cooking_started_at=s.cooking_started_at(),
+        )
         return Response(state.model_dump_json(), mimetype="application/json")
 
     @app.post("/api/firing/start")

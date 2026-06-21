@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import queue
 import threading
+from datetime import datetime
 from typing import Any
 
 from generated.pydantic import Firing, Pizza, Sample
@@ -91,6 +92,21 @@ class Store:
     def active_pizza(self) -> Pizza | None:
         with self._lock:
             return self._active_pizza
+
+    def cooking_started_at(self) -> datetime | None:
+        """Datetime of the active firing's first pizza (earliest `seq`),
+        or None when idle or still warming up. Read straight from the DB so it
+        is correct after a mid-firing restart."""
+        with self._lock:
+            if self._firing is None:
+                return None
+            row = self._conn.execute(
+                "SELECT started_at FROM pizza WHERE firing_id=? ORDER BY seq LIMIT 1",
+                (self._firing.id,),
+            ).fetchone()
+            if row is None:
+                return None
+            return datetime.fromisoformat(row["started_at"])
 
     def samples(self, firing_id: int) -> list[Sample]:
         """The full sample series for a firing, oldest first."""

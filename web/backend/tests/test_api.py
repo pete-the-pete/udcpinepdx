@@ -299,3 +299,14 @@ def test_unknown_api_path_is_404_not_spa(spa_client) -> None:
     res = spa_client.get("/api/does-not-exist")
     assert res.status_code == 404
     assert b"udcpine" not in res.data
+
+
+def test_state_cooking_started_at_null_until_first_pizza(paired_client) -> None:
+    paired_client.post("/api/firing/start")
+    state = LiveState.model_validate(json.loads(paired_client.get("/api/state").data))
+    assert state.cooking_started_at is None  # warming up
+
+    paired_client.post("/api/pizza/next", json={"name": "margherita"})
+    state = LiveState.model_validate(json.loads(paired_client.get("/api/state").data))
+    assert state.cooking_started_at is not None
+    assert state.cooking_started_at == state.active_pizza.started_at

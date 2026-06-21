@@ -59,6 +59,7 @@ class LiveState(BaseModel):
     firing: Firing | None
     latest_sample: Sample | None
     active_pizza: Pizza | None
+    cooking_started_at: AwareDatetime | None
 
 
 class LiveEvent1(BaseModel):

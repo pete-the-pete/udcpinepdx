@@ -317,3 +317,32 @@ def test_active_pizza_is_rehydrated_by_a_new_store(db_path) -> None:
     assert resumed.id == started.id
     assert resumed.name == "Margherita"
     assert resumed.ended_at is None
+
+
+def test_cooking_started_at_is_none_when_idle(db_path) -> None:
+    s = Store(db_path, clock=FixedClock(T0))
+    assert s.cooking_started_at() is None
+
+
+def test_cooking_started_at_is_none_while_warming_up(db_path) -> None:
+    s = Store(db_path, clock=FixedClock(T0))
+    s.start_firing()  # fire lit, no pizza yet
+    assert s.cooking_started_at() is None
+
+
+def test_cooking_started_at_is_first_pizza_started_at(db_path) -> None:
+    s = Store(db_path, clock=AdvancingClock(T0))
+    s.start_firing()
+    first = s.next_pizza(name="margherita")
+    assert first is not None
+    s.next_pizza(name="pepperoni")  # second pizza must not move it
+    assert s.cooking_started_at() == first.started_at
+
+
+def test_cooking_started_at_rehydrates_across_store_instances(db_path) -> None:
+    s1 = Store(db_path, clock=AdvancingClock(T0))
+    s1.start_firing()
+    first = s1.next_pizza(name="margherita")
+    assert first is not None
+    s2 = Store(db_path, clock=AdvancingClock(T0))  # "restart"
+    assert s2.cooking_started_at() == first.started_at

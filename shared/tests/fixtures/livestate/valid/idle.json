@@ -1,5 +1,6 @@
 {
   "firing": null,
   "latest_sample": null,
-  "active_pizza": null
+  "active_pizza": null,
+  "cooking_started_at": null
 }

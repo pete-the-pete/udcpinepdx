@@ -17,6 +17,14 @@ export const LiveStateSchema = z.object({
   firing: FiringSchema.nullable(),
   latest_sample: SampleSchema.nullable(),
   active_pizza: PizzaSchema.nullable(),
+  /**
+   * ISO timestamp of the active firing's FIRST pizza (its `started_at`), or
+   * null while the oven is lit but no pizza has started yet ("warming up").
+   * Derived server-side from pizza rows; drives idle→warm-up→cooking routing
+   * and survives a kiosk reload (the /api/state snapshot only carries the
+   * *active* pizza, which can't distinguish warm-up from between-pizzas).
+   */
+  cooking_started_at: z.string().datetime({ offset: true }).nullable(),
 });
 
 export type LiveState = z.infer<typeof LiveStateSchema>;

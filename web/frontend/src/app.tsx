@@ -11,6 +11,7 @@ import { HeroNumber } from "./views/hero-number";
 import { IdleScreen } from "./views/idle-screen";
 import { PairScreen } from "./views/pair-screen";
 import { ReconnectingOverlay } from "./views/reconnecting-overlay";
+import { WarmingUpScreen } from "./views/warming-up-screen";
 
 type Boot =
   | { kind: "loading" }
@@ -111,6 +112,14 @@ function Live({ initial, onAction }: { initial: LiveState; onAction: () => void 
     return (
       <>
         <IdleScreen onStarted={onAction} latestSample={state.latest_sample} />
+        {overlay}
+      </>
+    );
+  }
+  if (state.cooking_started_at === null) {
+    return (
+      <>
+        <WarmingUpScreen firing={state.firing} latestSample={state.latest_sample} onAction={onAction} />
         {overlay}
       </>
     );

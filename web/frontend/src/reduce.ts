@@ -16,6 +16,7 @@ export function applyEvent(state: LiveState, event: LiveEvent): LiveState {
         firing: event.firing,
         latest_sample: null,
         active_pizza: null,
+        cooking_started_at: null,
       };
     case "firing_ended":
       return {
@@ -23,11 +24,14 @@ export function applyEvent(state: LiveState, event: LiveEvent): LiveState {
         firing: null,
         latest_sample: null,
         active_pizza: null,
+        cooking_started_at: null,
       };
     case "pizza_started":
       return {
         ...state,
         active_pizza: event.pizza,
+        // Set only on the FIRST pizza of the firing; later pizzas keep it.
+        cooking_started_at: state.cooking_started_at ?? event.pizza.started_at,
       };
     case "pizza_ended":
       // The backend will follow up with a pizza_started if there's a new
