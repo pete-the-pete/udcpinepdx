@@ -8,6 +8,14 @@
   cursor: pointer;
 }
 
+/* On the cooking dashboard the pizza-bar (next-pizza form / now-baking card)
+   runs along the bottom; without this, the corner Chuck covers its submit /
+   NEXT-PIZZA button. Lift him clear of the bar. Scoped via :has() so it only
+   applies where a pizza-bar exists (the dashboard). */
+.hero:has(.hero__pizza-bar) .chef--compact {
+  bottom: 120px;
+}
+
 .chef--expanded {
   position: fixed;
   inset: 0;
