@@ -5,17 +5,17 @@ import { manifest } from "./manifest";
 describe("selectState", () => {
   it("maps a temperature (°C) to the band it falls in", () => {
     expect(selectState(50, null, manifest)).toBe("frozen");
-    expect(selectState(150, null, manifest)).toBe("thawing");
-    expect(selectState(200, null, manifest)).toBe("active");
-    expect(selectState(260, null, manifest)).toBe("hot");
-    expect(selectState(350, null, manifest)).toBe("very_hot");
+    expect(selectState(175, null, manifest)).toBe("thawing");
+    expect(selectState(240, null, manifest)).toBe("active");
+    expect(selectState(320, null, manifest)).toBe("hot");
+    expect(selectState(400, null, manifest)).toBe("very_hot");
   });
 
   it("treats edges as [low, high) — an edge lands in the upper band", () => {
-    expect(selectState(120, null, manifest)).toBe("thawing");
-    expect(selectState(180, null, manifest)).toBe("active");
-    expect(selectState(230, null, manifest)).toBe("hot");
-    expect(selectState(290, null, manifest)).toBe("very_hot");
+    expect(selectState(150, null, manifest)).toBe("thawing");
+    expect(selectState(200, null, manifest)).toBe("active");
+    expect(selectState(275, null, manifest)).toBe("hot");
+    expect(selectState(375, null, manifest)).toBe("very_hot");
   });
 
   it("returns frozen for a null sample", () => {
@@ -34,18 +34,18 @@ describe("selectState", () => {
         active: manifest.states.active,
       },
     } as typeof manifest;
-    // 260 and 350 fall in the absent hot / very_hot bands → clamp to active.
-    expect(selectState(260, null, partial)).toBe("active");
-    expect(selectState(350, null, partial)).toBe("active");
+    // 300 and 450 fall in the absent hot / very_hot bands → clamp to active.
+    expect(selectState(300, null, partial)).toBe("active");
+    expect(selectState(450, null, partial)).toBe("active");
   });
 
   it("holds prevState within the hysteresis dead-band", () => {
-    // 182 is past the 180 edge but within HYSTERESIS_C — stay in thawing.
-    expect(selectState(182, "thawing", manifest)).toBe("thawing");
+    // 202 is past the 200 edge but within HYSTERESIS_C — stay in thawing.
+    expect(selectState(202, "thawing", manifest)).toBe("thawing");
   });
 
   it("switches once a temperature clears the edge by the full margin", () => {
-    expect(selectState(180 + HYSTERESIS_C, "thawing", manifest)).toBe("active");
-    expect(selectState(115, "thawing", manifest)).toBe("frozen");
+    expect(selectState(200 + HYSTERESIS_C, "thawing", manifest)).toBe("active");
+    expect(selectState(140, "thawing", manifest)).toBe("frozen");
   });
 });
