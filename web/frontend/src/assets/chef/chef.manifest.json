@@ -10,15 +10,15 @@
       "css_animation": "shiver",
       "temp_c": [
         null,
-        120
+        66
       ]
     },
     "thawing": {
       "frames": 1,
       "fps": 6,
       "temp_c": [
-        120,
-        180
+        66,
+        93
       ]
     },
     "active": {
@@ -26,8 +26,8 @@
       "fps": 8,
       "css_animation": "jig",
       "temp_c": [
-        180,
-        230
+        93,
+        135
       ]
     },
     "hot": {
@@ -35,8 +35,8 @@
       "fps": 10,
       "css_animation": "heat",
       "temp_c": [
-        230,
-        290
+        135,
+        191
       ]
     },
     "very_hot": {
@@ -44,7 +44,7 @@
       "fps": 12,
       "css_animation": "transcendence",
       "temp_c": [
-        290,
+        191,
         null
       ]
     }
