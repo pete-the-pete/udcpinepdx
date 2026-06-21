@@ -7,14 +7,18 @@ One shared firing Store + one AuthStore + a mock sensor thread. Every
 from __future__ import annotations
 
 import json
+import logging
 import os
 import secrets
 import socket
+import threading
+from collections.abc import Callable
 from pathlib import Path
 
 from flask import Flask, Response, abort, request, send_from_directory
 from generated.pydantic import (
     ExchangeRequest,
+    Firing,
     IngestSampleRequest,
     LiveState,
     PizzaNextRequest,
@@ -23,7 +27,18 @@ from pydantic import ValidationError
 
 from .auth_store import AuthStore
 from .mock_sensor import MockSensorThread, mock_sensor_enabled
+from .sheets import SheetsExporter, build_exporter_from_env
 from .store import Store
+
+log = logging.getLogger(__name__)
+
+
+def _thread_export_runner(task: Callable[[], None]) -> None:
+    """Default export runner: fire the task on a daemon thread so a
+    multi-thousand-row Sheets write never stalls the stop response or the SSE
+    broadcast. Tests pass an inline runner for deterministic assertions."""
+    threading.Thread(target=task, daemon=True, name="sheets-export").start()
+
 
 # Hard cap for the ingest endpoint body. A valid IngestSampleRequest is
 # ~60 bytes; 1 KB is generous. Enforced per-route (not via Flask's global
@@ -65,11 +80,17 @@ def create_app(
     store: Store | None = None,
     auth: AuthStore | None = None,
     frontend_dist: Path | None = None,
+    exporter: SheetsExporter | None = None,
+    export_runner: Callable[[Callable[[], None]], None] | None = None,
 ) -> Flask:
     app = Flask(__name__)
     dist = frontend_dist if frontend_dist is not None else _default_frontend_dist()
     db_path = os.environ.get("UDCPINE_DB_PATH", "udcpine.db")
     s = store if store is not None else Store(db_path)
+    # No-op unless UDCPINE_SHEETS_OAUTH_TOKEN + UDCPINE_SHEETS_SPREADSHEET_ID
+    # are set, so dev/CI/an unconfigured Pi behave exactly as before.
+    sheets = exporter if exporter is not None else build_exporter_from_env()
+    run_export = export_runner if export_runner is not None else _thread_export_runner
 
     if auth is None:
         bootstrap = os.environ.get("UDCPINE_BOOTSTRAP_TOKEN") or secrets.token_urlsafe(16)
@@ -150,11 +171,26 @@ def create_app(
         firing = s.start_firing()
         return Response(firing.model_dump_json(), mimetype="application/json")
 
+    def _schedule_sheets_export(firing: Firing) -> None:
+        """Push the just-ended firing to Google Sheets, off the request thread.
+        Runs after firing_ended has already broadcast, so the dashboard is
+        current regardless of outcome. Any failure is logged and dropped — the
+        export must never turn a successful stop into an error."""
+
+        def task() -> None:
+            try:
+                sheets.export_firing(firing, s.samples(firing.id), s.pizzas(firing.id))
+            except Exception:
+                log.warning("sheets export failed for firing %s", firing.id, exc_info=True)
+
+        run_export(task)
+
     @app.post("/api/firing/stop")
     def post_firing_stop() -> tuple[Response, int] | Response:
         ended = s.stop_firing()
         if ended is None:
             return Response('{"error":"no active firing"}', mimetype="application/json"), 409
+        _schedule_sheets_export(ended)
         return Response(ended.model_dump_json(), mimetype="application/json")
 
     @app.post("/api/pizza/next")

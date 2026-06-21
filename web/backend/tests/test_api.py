@@ -14,9 +14,16 @@ from generated.pydantic import Firing, LiveState
 
 from udcpine_backend.app import create_app
 from udcpine_backend.auth_store import AuthStore
+from udcpine_backend.sheets import FakeSheetsExporter, NoopSheetsExporter, RaisingSheetsExporter
 from udcpine_backend.store import Store
 
 BOOTSTRAP = "test-bootstrap-secret"
+
+
+def _inline_runner(task) -> None:
+    """Run the export synchronously so the stop-wiring tests are deterministic
+    (production runs it on a daemon thread)."""
+    task()
 
 
 @pytest.fixture()
@@ -214,6 +221,62 @@ def test_stop_firing_clears_active_pizza_in_state(paired_client) -> None:
     state = LiveState.model_validate(json.loads(paired_client.get("/api/state").data))
     assert state.firing is None
     assert state.active_pizza is None
+
+
+# --- Google Sheets export on firing stop ------------------------------
+
+
+def _paired(app) -> object:
+    app.config.update(TESTING=True)
+    client = app.test_client()
+    assert client.post("/api/auth/exchange", json={"token": BOOTSTRAP}).status_code == 200
+    return client
+
+
+def test_stop_exports_the_firing_to_sheets(store, auth) -> None:
+    exporter = FakeSheetsExporter()
+    c = _paired(create_app(store=store, auth=auth, exporter=exporter, export_runner=_inline_runner))
+    fid = json.loads(c.post("/api/firing/start").data)["id"]
+    c.post("/api/pizza/next", json={"name": "Margherita"})
+    c.post("/api/ingest/sample", json={"temp_c": 250.0})
+
+    res = c.post("/api/firing/stop")
+    assert res.status_code == 200
+
+    assert exporter.exported_firing_ids == [fid]
+    # The persisted sample lands on the firing's detail tab (header + 1 row).
+    detail = exporter.detail_tabs[f"firing-{fid}"]
+    assert detail[0] == ["t", "temp_c", "temp_f"]
+    assert len(detail) == 2
+    # The pizza (auto-ended by stop) is captured too.
+    assert len(exporter.pizzas_rows) == 1
+
+
+def test_stop_with_noop_exporter_returns_200(store, auth) -> None:
+    c = _paired(
+        create_app(
+            store=store, auth=auth, exporter=NoopSheetsExporter(), export_runner=_inline_runner
+        )
+    )
+    c.post("/api/firing/start")
+    assert c.post("/api/firing/stop").status_code == 200
+
+
+def test_stop_returns_200_even_when_export_raises(store, auth) -> None:
+    exporter = RaisingSheetsExporter()
+    c = _paired(create_app(store=store, auth=auth, exporter=exporter, export_runner=_inline_runner))
+    fid = json.loads(c.post("/api/firing/start").data)["id"]
+    res = c.post("/api/firing/stop")
+    # The export blew up, but the stop still succeeds.
+    assert res.status_code == 200
+    assert exporter.attempts == [fid]
+
+
+def test_stop_without_active_firing_does_not_export(store, auth) -> None:
+    exporter = FakeSheetsExporter()
+    c = _paired(create_app(store=store, auth=auth, exporter=exporter, export_runner=_inline_runner))
+    assert c.post("/api/firing/stop").status_code == 409
+    assert exporter.exported_firing_ids == []
 
 
 # --- Single-origin SPA serving (the built bundle, served by Flask) ---
