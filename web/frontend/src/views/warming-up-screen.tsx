@@ -1,8 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import type { Firing, Sample } from "@udcpine/shared";
 import { endFiring, nextPizza } from "../api";
-import { formatHearthTempF } from "../temp";
-import { ChefStage } from "../chef/ChefStage";
+import { ChefPanel } from "../chef/ChefPanel";
 
 interface WarmingUpScreenProps {
   firing: Firing;
@@ -88,12 +87,7 @@ export function WarmingUpScreen({ firing, latestSample, onAction }: WarmingUpScr
       </header>
 
       <section class="idle">
-        <div class="idle__chef">
-          <ChefStage latest_sample={latestSample} />
-          <output class="idle__temp" aria-label="current hearth temperature">
-            {formatHearthTempF(latestSample?.temp_c ?? null)}
-          </output>
-        </div>
+        <ChefPanel latest_sample={latestSample} />
         <form class="idle__form" onSubmit={onSubmit}>
           <input
             class="idle__name"

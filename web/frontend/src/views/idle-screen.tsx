@@ -1,8 +1,7 @@
 import { useState } from "preact/hooks";
 import type { Sample } from "@udcpine/shared";
 import { startFiring } from "../api";
-import { formatHearthTempF } from "../temp";
-import { ChefStage } from "../chef/ChefStage";
+import { ChefPanel } from "../chef/ChefPanel";
 import { PairPhoneOverlay } from "./pair-phone-overlay";
 
 interface IdleScreenProps {
@@ -46,12 +45,7 @@ export function IdleScreen({ onStarted, latestSample }: IdleScreenProps) {
       </header>
 
       <section class="idle">
-        <div class="idle__chef">
-          <ChefStage latest_sample={latestSample} />
-          <output class="idle__temp" aria-label="current hearth temperature">
-            {formatHearthTempF(latestSample?.temp_c ?? null)}
-          </output>
-        </div>
+        <ChefPanel latest_sample={latestSample} />
         <button
           type="button"
           class="idle__start"
