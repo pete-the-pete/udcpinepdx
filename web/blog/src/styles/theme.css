@@ -1,0 +1,31 @@
+/* Warm Editorial — the chosen design direction. Refined food-magazine: cream
+   paper, espresso ink, a single terracotta accent, Fraunces + Newsreader. */
+:root {
+  --cream: #f7f1e8;
+  --paper: #fffdf9;
+  --espresso: #2b2018;
+  --stone: #8a8170;
+  --faint: #b8af9f;
+  --terra: #c25b3a;
+  --terra-soft: #d98b6e;
+  --note: #a98a4b;
+  --gap: #cfc4b2;
+  --fault: #b23b2e;
+  --rule: rgba(43, 32, 24, 0.12);
+  --rule-soft: rgba(43, 32, 24, 0.08);
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Newsreader", Georgia, serif;
+  --font-mono: "Spline Sans Mono", ui-monospace, monospace;
+
+  /* Chart palette (consumed by SVG classes in blog.css) */
+  --c-bg: var(--paper);
+  --c-text: var(--espresso);
+  --c-grid: var(--rule-soft);
+  --c-line: var(--terra);
+  --c-pizza: var(--terra);
+  --c-note: var(--note);
+  --c-gap: var(--gap);
+  --c-fault: var(--fault);
+  --c-accent: var(--terra);
+}
