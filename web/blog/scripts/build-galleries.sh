@@ -21,8 +21,16 @@ if ! command -v sips >/dev/null 2>&1; then
 fi
 
 rm -rf "$OUT"
+# Draw-from pools: raw photo libraries to pull individual shots from, not
+# published entries. Skipped here so they don't generate committed galleries.
+POOLS=" pizzas "
+
 for dir in "$SRC"/*/; do
   entry="$(basename "$dir")"
+  if [[ "$POOLS" == *" $entry "* ]]; then
+    echo "$entry: skipped (draw-from pool)"
+    continue
+  fi
   out="$OUT/$entry"
   mkdir -p "$out"
   i=0

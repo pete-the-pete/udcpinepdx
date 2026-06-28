@@ -54,20 +54,6 @@ export const posts: Post[] = [
     ),
   },
   {
-    slug: "pizzas",
-    title: "Pizzas",
-    date: "2022-07-02",
-    dek: "A run of pies.",
-    Component: () => (
-      <GalleryPage
-        eyebrow="Gallery"
-        title="Pizzas"
-        entry="pizzas"
-        intro="A handful of pies from the early days."
-      />
-    ),
-  },
-  {
     slug: "mr-grumpy",
     title: "Mr. Grumpy's Fire Mouth",
     date: "2022-04-09",
