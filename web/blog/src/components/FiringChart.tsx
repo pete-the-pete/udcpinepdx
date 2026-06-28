@@ -82,7 +82,7 @@ export function FiringChart({ firing, mode }: { firing: Firing; mode: "clean" | 
           class="chart"
           viewBox={`0 0 ${W} ${H}`}
           role="img"
-          aria-label="Hearth temperature over the firing"
+          aria-label="Oven air temperature over the firing"
           onPointerMove={(e) => onMove(e.clientX)}
           onPointerDown={(e) => onMove(e.clientX)}
           onPointerLeave={() => setTip((t) => ({ ...t, show: false }))}
@@ -137,8 +137,8 @@ export function FiringChart({ firing, mode }: { firing: Firing; mode: "clean" | 
   );
 }
 
-function labelFor(p: { kind: string; name: string }): string {
-  if (p.kind === "pizza") return `🍕 ${p.name}`;
+function labelFor(p: { kind: string; name: string; no?: number | null }): string {
+  if (p.kind === "pizza") return `🍕 #${p.no} ${p.name}`;
   if (p.kind === "note") return p.name;
   return "tending the fire";
 }

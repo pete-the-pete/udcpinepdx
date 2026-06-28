@@ -33,9 +33,9 @@ export function FiringOne() {
         </p>
 
         <figure>
-          <ChuckDemo initialC={f.clean_max_c} />
+          <ChuckDemo />
           <figcaption>
-            Chuck has five moods, mapped to hearth temperature with a 4° dead-band so he never
+            Chuck has five moods, mapped to the oven air temperature with a 4° dead-band so he never
             flickers. Drag him from frozen all the way to transcendence.
           </figcaption>
         </figure>
@@ -47,7 +47,7 @@ export function FiringOne() {
           </div>
           <div class="stat">
             <b>{peakF}°F</b>
-            <span>peak hearth</span>
+            <span>peak air temp</span>
           </div>
           <div class="stat">
             <b>{pies}</b>
@@ -61,7 +61,7 @@ export function FiringOne() {
 
         <h2>Reading the fire</h2>
         <p class="standfirst">
-          A thermocouple sampled the hearth once a second for three hours straight. Drag across the
+          A thermocouple sampled the air inside the chiminea once a second for three hours straight. Drag across the
           curve to re-live the firing — Chuck reacts to the reading under the playhead.
         </p>
 

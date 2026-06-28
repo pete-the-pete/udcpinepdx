@@ -9,7 +9,7 @@ export function Home() {
 
       <section class="home-hero">
         <div class="eyebrow">A wood-fired pizza diary</div>
-        <h1>Pine PDX</h1>
+        <h1>udcpinepdx</h1>
         <p class="home-lede">
           We’re building a custom, instrumented wood-fired pizza oven — and learning electronics,
           fire, and dough as we go. Friends come over, we make pizzas, and a little thermocouple

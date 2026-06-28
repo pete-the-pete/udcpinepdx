@@ -22,7 +22,7 @@ export function PizzaResults({
         const blurb = curation.pizza_blurbs[String(p.seq)];
         return (
           <div class={`pcard pcard--${p.kind}`} key={p.seq}>
-            <span class="pcard__seq">{String(p.seq).padStart(2, "0")}</span>
+            <span class="pcard__seq">{p.no != null ? String(p.no).padStart(2, "0") : "··"}</span>
             <span class="pcard__body">
               <span class="pcard__name">
                 {p.kind === "gap" ? "tending the fire" : p.name}

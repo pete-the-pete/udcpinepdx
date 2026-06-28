@@ -12,7 +12,7 @@ export type PizzaKind = "pizza" | "gap" | "note";
 export interface SeriesPoint {
   /** Seconds since the firing started. */
   x: number;
-  /** Hearth temperature, °C. */
+  /** Oven air temperature inside the chiminea, °C. */
   c: number;
   /** True for an open-thermocouple fault reading (shown only in the raw view). */
   fault: boolean;
@@ -20,6 +20,8 @@ export interface SeriesPoint {
 
 export interface PizzaSlot {
   seq: number;
+  /** Pizza number 1..N (kind === "pizza" only); null for gaps and notes. */
+  no: number | null;
   name: string;
   /** Seconds since firing start. */
   start: number;

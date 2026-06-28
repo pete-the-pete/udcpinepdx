@@ -156,6 +156,16 @@ def main() -> int:
             }
         )
 
+    # Number the actual pizzas 1..N in order, ignoring the in-between "Null"
+    # placeholders and oven-tending notes that inflate the raw DB seq.
+    pizza_no = 0
+    for slot in pizzas:
+        if slot["kind"] == "pizza":
+            pizza_no += 1
+            slot["no"] = pizza_no
+        else:
+            slot["no"] = None
+
     ended = datetime.fromisoformat(frow["ended_at"]) if frow["ended_at"] else None
     duration_s = (ended - t0).total_seconds() if ended else raw[-1][0]
     clean_max = max(c for _, c in clean)
