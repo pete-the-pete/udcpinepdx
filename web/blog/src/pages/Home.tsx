@@ -18,12 +18,14 @@ export function Home() {
       </section>
 
       <section class="post-list">
-        {posts.map((p) => (
+        {[...posts]
+          .sort((a, b) => b.date.localeCompare(a.date))
+          .map((p) => (
           <a class="post-card" href={`#/${p.slug}`} key={p.slug}>
             <div class="post-card__date">{formatDate(p.date)}</div>
             <h2 class="post-card__title">{p.title}</h2>
             <p class="post-card__dek">{p.dek}</p>
-            <span class="post-card__more">Read the firing →</span>
+            <span class="post-card__more">Read the entry →</span>
           </a>
         ))}
       </section>
