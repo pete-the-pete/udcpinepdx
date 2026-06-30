@@ -609,7 +609,7 @@ figure.bleed > * {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 28px;
-  align-items: center;
+  align-items: start;
   margin: 48px 0;
 }
 .spread[data-flip="true"] .spread__media {

@@ -1,10 +1,11 @@
 /**
  * Entry — "Mr. Grumpy's Fire Mouth." Content from web/blog/assets/mr-grumpy/Mr.md.
  * Photos are alternating left/right story spreads; the rest go in a closing
- * contact sheet. All seven share one lightbox.
+ * contact sheet. They share one lightbox.
  *
  * The photos are all of the chiminea rig (there are none of the pizza itself —
  * "I forgot to take any pictures"), so captions describe the oven, not the pie.
+ * 01.jpg (the top-down chamber shot) is excluded — not right for this page.
  */
 import { useState } from "preact/hooks";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
@@ -15,9 +16,10 @@ import { galleryFor } from "../galleries";
 const ALT = "Mr. Grumpy's Fire Mouth";
 
 export function MrGrumpy() {
-  const photos = galleryFor("mr-grumpy"); // 01..07 → indices 0..6
+  // 02..07 in order → indices 0..5 (01.jpg dropped).
+  const pics = galleryFor("mr-grumpy", { exclude: ["01.jpg"] });
   const [lb, setLb] = useState<number | null>(null);
-  const contact = [1, 3, 5]; // the near-variant "fire coming up" shots
+  const contact = [0, 2, 4]; // 02, 04, 06 — the near-variant "fire coming up" shots
 
   return (
     <div class="wrap">
@@ -42,29 +44,15 @@ export function MrGrumpy() {
         </p>
 
         <StorySpread
-          src={photos[2]!}
+          src={pics[1]!}
           alt={ALT}
           caption="The rig: a paver and bricks sealing the upper deck, cap on to hold the heat."
           flip={false}
-          onZoom={() => setLb(2)}
+          onZoom={() => setLb(1)}
         >
           <p>
             This attempt was all about closing off the upper-deck opening to trap as much heat as I
             could — cap on, and let it run for hours. It was also raining.
-          </p>
-        </StorySpread>
-
-        <StorySpread
-          src={photos[0]!}
-          alt={ALT}
-          caption="Looking down into the cooking chamber — lava rock and the cooking stone."
-          flip={true}
-          onZoom={() => setLb(0)}
-        >
-          <p>
-            Up top is the cooking chamber: lava rock for thermal mass and a heavy stone to bake on.
-            The whole bet is that if I choke the openings, this little chamber finally gets hot enough
-            to cook a pizza.
           </p>
         </StorySpread>
 
@@ -88,24 +76,25 @@ export function MrGrumpy() {
         </p>
 
         <StorySpread
-          src={photos[6]!}
+          src={pics[5]!}
           alt={ALT}
           caption="Inside the chamber — the cooking stone over a bright firebox."
-          flip={false}
-          onZoom={() => setLb(6)}
+          flip={true}
+          onZoom={() => setLb(5)}
         >
           <p>
-            With the fire roaring below, the cooking stone starts to glow. This is the moment it
-            actually feels like an oven instead of a fancy fire pit.
+            Up top is the cooking chamber: lava rock for thermal mass and a heavy stone to bake on.
+            With the fire roaring below, the stone starts to glow — the moment it actually feels like
+            an oven instead of a fancy fire pit.
           </p>
         </StorySpread>
 
         <StorySpread
-          src={photos[4]!}
+          src={pics[3]!}
           alt={ALT}
           caption="Stone lid off — embers banked in the firebox."
-          flip={true}
-          onZoom={() => setLb(4)}
+          flip={false}
+          onZoom={() => setLb(3)}
         >
           <p>
             Pulling the stone to check the coals. The lower firebox got properly hot; the whole trick
@@ -125,14 +114,14 @@ export function MrGrumpy() {
         <div class="gallery gallery--contact">
           {contact.map((i) => (
             <button class="gallery__thumb" key={i} onClick={() => setLb(i)}>
-              <img src={photos[i]} alt={`${ALT} — photo ${i + 1}`} loading="lazy" />
+              <img src={pics[i]} alt={`${ALT} — photo ${i + 1}`} loading="lazy" />
             </button>
           ))}
         </div>
       </article>
 
       <SiteFooter />
-      <PhotoLightbox images={photos} index={lb} alt={ALT} onClose={() => setLb(null)} onIndex={setLb} />
+      <PhotoLightbox images={pics} index={lb} alt={ALT} onClose={() => setLb(null)} onIndex={setLb} />
     </div>
   );
 }
