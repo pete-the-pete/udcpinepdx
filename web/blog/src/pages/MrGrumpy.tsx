@@ -29,30 +29,53 @@ export function MrGrumpy() {
         <header class="post-hero">
           <div class="eyebrow">Attempt 10 · the first post</div>
           <h1>Mr. Grumpy's Fire Mouth</h1>
-          <div class="byline">by Pete &amp; friends</div>
         </header>
-
-        <p class="standfirst">
-          The 10th attempt is the first post. A lot has been learned to get here — but the journey
-          continues.
-        </p>
         <p class="dropcap">
-          The main takeaway: cooking pizza in the upper deck of a chiminea in northeast Portland
-          doesn’t <em>really</em> work — but it’s fun to try. A pizza oven is supposed to be screaming
-          hot, and the way you get there is thick insulating walls and hours of heat. Mine has thin
-          walls and two giant holes in the front that let the heat right out.
+          One of the the main characteristics of a pizza oven is supposed to get super hot to achieve the perfect balance of a crispy, blistered crust and a soft, chewy interior.
+          Most wood fired pizza ovens achieve with thick insulating walls, a large internal space, and maybe a door. Then you burn wood in the over for a while to get things really hot before cooking pizza.
+          A more convenient option would be an off the shelf option engineered to provide high heat without all the mass of wood fired oven, i.e. thin steel walls in a tight space that blasts the pizza from all sides with even/consistent gas or electric heat that can be conveniently switch ON (and turned OFF) when you're done...and maybe a door.
+          <br/><br/>
+          The chiminea neither mass nor technology to help qualify it as a pizza (or any type, really) oven. It has thin terracotta walls, a tiny burn chamber, the cooking area is <em>directly</em> above an inconsistent heat source, ash gets everywhere, and there is a <b>giant</b> opening where'd you'd really want a door...and yet...it sure seems like you could cook pizza if you solve those challenges.
+        </p>
+
+        <h2>We are gonna make pizza</h2>
+        <p class="dropcap">
+          The 10th attempt is the first post. A lot has been learned to get here (100% improvement each time™!). Evidence shows that the chiminea CAN, technically, cook pizza. Now it is time to perfect the this process given the "oven" we have. 
+
+          This time attempts to solve the biggest current problem; cooking temperature and heat retention. The thing can get hot, but it requires a ton of wood to get there. It's also crazy uneven heat, we end up with burnt and soggy pizzas, and the whole thing cools down so quickly it takes forever to get it back up to temp (whatever that temp might be, i don't have a way to measure it).
+
+          So this attempt has:
+          <ul>
+            <li>a pizza stone</li>
+            <li>a curved paver for a door</li>
+            <li>bricks everywhere! (for heat retention)</li>
+          </ul>
         </p>
 
         <StorySpread
           src={pics[1]!}
           alt={ALT}
-          caption="The rig: a paver and bricks sealing the upper deck, cap on to hold the heat."
+          caption='A paver and bricks makes a "door"!'
           flip={false}
           onZoom={() => setLb(1)}
         >
           <p>
-            This attempt was all about closing off the upper-deck opening to trap as much heat as I
+            Closing off the upper-deck opening to trap as much heat as I
             could — cap on, and let it run for hours. It was also raining.
+          </p>
+        </StorySpread>
+        
+
+        <StorySpread
+          src={pics[5]!}
+          alt={ALT}
+          caption="Inside the chamber — the cooking stone over a bright firebox."
+          flip={true}
+          onZoom={() => setLb(5)}
+        >
+          <p>
+            Pizza stone is on top of the factory made terracota sone.
+            Proof that the door is really working, look at the streaks! The rain (and also some test splashes) boiled away to steam almost instantly!
           </p>
         </StorySpread>
 
@@ -75,36 +98,9 @@ export function MrGrumpy() {
           is the oven that cooked it.
         </p>
 
-        <StorySpread
-          src={pics[5]!}
-          alt={ALT}
-          caption="Inside the chamber — the cooking stone over a bright firebox."
-          flip={true}
-          onZoom={() => setLb(5)}
-        >
-          <p>
-            Up top is the cooking chamber: lava rock for thermal mass and a heavy stone to bake on.
-            With the fire roaring below, the stone starts to glow — the moment it actually feels like
-            an oven instead of a fancy fire pit.
-          </p>
-        </StorySpread>
-
-        <StorySpread
-          src={pics[3]!}
-          alt={ALT}
-          caption="Stone lid off — embers banked in the firebox."
-          flip={false}
-          onZoom={() => setLb(3)}
-        >
-          <p>
-            Pulling the stone to check the coals. The lower firebox got properly hot; the whole trick
-            is getting that heat to climb into the chamber and <em>stay</em> there.
-          </p>
-        </StorySpread>
-
-        <h2>The recap</h2>
+        <h2>The learnings</h2>
         <p>
-          It went OK. It definitely got hot — but not <em>really</em> hot. Still, the pizza wasn’t
+          It went OK. It definitely got hot — but not <em>really</em> hot. Still, the pizza wasn't
           watery like other times (simple toppings help a lot), the crust had a nice texture and was
           only mildly dark on the bottom, and — the big win — it actually cooked, in a reasonable
           amount of time, without me fussing with the fire the whole time.

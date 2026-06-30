@@ -11,9 +11,7 @@ export function Home() {
         <div class="eyebrow">A wood-fired pizza diary</div>
         <h1>udcpinepdx</h1>
         <p class="home-lede">
-          We’re building a custom, instrumented wood-fired pizza oven — and learning electronics,
-          fire, and dough as we go. Friends come over, we make pizzas, and a little thermocouple
-          chef named Chuck reads the heat. Here’s every firing, warts and all.
+         cooking pizza in the upper deck of a chiminea in northeast Portland <em>barely</em> works — but it's fun to try™. 
         </p>
       </section>
 
