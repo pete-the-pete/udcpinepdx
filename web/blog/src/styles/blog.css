@@ -603,16 +603,14 @@ figure.bleed > * {
 }
 
 /* ---- alternating story spreads ---- */
+/* Aligned to the content column (not broken out), so photo + text share the
+   same left/right edges as the body copy. */
 .spread {
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(1000px, calc(100vw - 48px));
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 28px;
   align-items: center;
-  margin: 56px 0;
+  margin: 48px 0;
 }
 .spread[data-flip="true"] .spread__media {
   order: 2;
@@ -664,9 +662,6 @@ figure.bleed > * {
   .spread {
     grid-template-columns: 1fr;
     gap: 16px;
-    width: 100%;
-    left: 0;
-    transform: none;
     margin: 40px 0;
   }
   .spread[data-flip="true"] .spread__media {
