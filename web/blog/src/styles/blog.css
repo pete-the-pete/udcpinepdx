@@ -615,6 +615,10 @@ figure.bleed > * {
 .spread[data-flip="true"] .spread__media {
   order: 2;
 }
+.spread__media {
+  /* reset the global figure margin so the image top aligns with the text top */
+  margin: 0;
+}
 .spread__zoom {
   display: block;
   width: 100%;
