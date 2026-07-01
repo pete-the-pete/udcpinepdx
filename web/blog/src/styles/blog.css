@@ -602,6 +602,36 @@ figure.bleed > * {
   display: block;
 }
 
+/* ---- lead hero image ---- */
+.hero-figure {
+  margin: 28px 0 8px;
+}
+.hero-figure__zoom {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.hero-figure img {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  border: 1px solid var(--rule-soft);
+  border-radius: 12px;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.hero-figure__zoom:hover img {
+  transform: scale(1.02);
+}
+.hero-figure figcaption {
+  text-align: left;
+  margin-top: 12px;
+}
+
 /* ---- alternating story spreads ---- */
 /* Aligned to the content column (not broken out), so photo + text share the
    same left/right edges as the body copy. */
@@ -750,7 +780,8 @@ figure.bleed > * {
 @media (prefers-reduced-motion: reduce) {
   .post-card,
   .gallery__thumb,
-  .spread__media img {
+  .spread__media img,
+  .hero-figure img {
     transition: none;
   }
 }

@@ -9,6 +9,7 @@
  */
 import { useState } from "preact/hooks";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
+import { Hero } from "../components/Hero";
 import { StorySpread } from "../components/StorySpread";
 import { PhotoLightbox } from "../components/PhotoLightbox";
 import { galleryFor } from "../galleries";
@@ -17,9 +18,9 @@ const ALT = "Mr. Grumpy's Fire Mouth";
 
 export function MrGrumpy() {
   // 02..07 in order → indices 0..5 (01.jpg dropped).
-  const pics = galleryFor("mr-grumpy", { exclude: ["01.jpg"] });
+  const pics = galleryFor("mr-grumpy");// , { exclude: ["01.jpg"] });
   const [lb, setLb] = useState<number | null>(null);
-  const contact = [0, 2, 4]; // 02, 04, 06 — the near-variant "fire coming up" shots
+  const contact = [0, 3, 4]; // the photos not used as the hero (2) or spreads (1, 5)
 
   return (
     <div class="wrap">
@@ -30,17 +31,24 @@ export function MrGrumpy() {
           <div class="eyebrow">Attempt 10 · the first post</div>
           <h1>Mr. Grumpy's Fire Mouth</h1>
         </header>
+        <Hero
+          src={pics[2]!}
+          alt={ALT}
+          caption='A paver and bricks makes a "door"!'
+          onZoom={() => setLb(2)}
+        />
         <p class="dropcap">
           One of the the main characteristics of a pizza oven is supposed to get super hot to achieve the perfect balance of a crispy, blistered crust and a soft, chewy interior.
           Most wood fired pizza ovens achieve with thick insulating walls, a large internal space, and maybe a door. Then you burn wood in the over for a while to get things really hot before cooking pizza.
           A more convenient option would be an off the shelf option engineered to provide high heat without all the mass of wood fired oven, i.e. thin steel walls in a tight space that blasts the pizza from all sides with even/consistent gas or electric heat that can be conveniently switch ON (and turned OFF) when you're done...and maybe a door.
-          <br/><br/>
+          <br /><br />
           The chiminea neither mass nor technology to help qualify it as a pizza (or any type, really) oven. It has thin terracotta walls, a tiny burn chamber, the cooking area is <em>directly</em> above an inconsistent heat source, ash gets everywhere, and there is a <b>giant</b> opening where'd you'd really want a door...and yet...it sure seems like you could cook pizza if you solve those challenges.
         </p>
 
+
         <h2>We are gonna make pizza</h2>
         <p class="dropcap">
-          The 10th attempt is the first post. A lot has been learned to get here (100% improvement each time™!). Evidence shows that the chiminea CAN, technically, cook pizza. Now it is time to perfect the this process given the "oven" we have. 
+          The 10th attempt is the first post. A lot has been learned to get here (100% improvement each time™!). Evidence shows that the chiminea CAN, technically, cook pizza. Now it is time to perfect the this process given the "oven" we have.
 
           This time attempts to solve the biggest current problem; cooking temperature and heat retention. The thing can get hot, but it requires a ton of wood to get there. It's also crazy uneven heat, we end up with burnt and soggy pizzas, and the whole thing cools down so quickly it takes forever to get it back up to temp (whatever that temp might be, i don't have a way to measure it).
 
@@ -64,18 +72,17 @@ export function MrGrumpy() {
             could — cap on, and let it run for hours. It was also raining.
           </p>
         </StorySpread>
-        
+
 
         <StorySpread
           src={pics[5]!}
           alt={ALT}
-          caption="Inside the chamber — the cooking stone over a bright firebox."
+          caption="Inside the chamber — the cooking stone over a bright firebox. Pizza stone is on top of the factory made terracota sone."
           flip={true}
           onZoom={() => setLb(5)}
         >
           <p>
-            Pizza stone is on top of the factory made terracota sone.
-            Proof that the door is really working, look at the streaks! The rain (and also some test splashes) boiled away to steam almost instantly!
+            The rain (and also some test splashes) boiled away to steam almost instantly! Proof that the door is really working, look at the streaks!
           </p>
         </StorySpread>
 
