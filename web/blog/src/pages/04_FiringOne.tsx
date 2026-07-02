@@ -4,6 +4,7 @@ import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import { ChuckDemo } from "../components/ChuckDemo";
 import { FiringChart } from "../components/FiringChart";
 import { ModeToggle, PizzaResults } from "../components/PizzaResults";
+import { PotentialImprovements } from "../components/PotentialImprovements";
 import { celsiusToFahrenheit } from "@frontend/temp";
 import { firing1Curation, firing1Data } from "../data";
 
@@ -83,6 +84,8 @@ export function FiringOne() {
             : "Seven named pies. Flip the toggle above to “Raw” to see the whole messy night."}
         </p>
         <PizzaResults firing={f} curation={firing1Curation} mode={mode} />
+
+        <PotentialImprovements />
       </article>
 
       <SiteFooter />

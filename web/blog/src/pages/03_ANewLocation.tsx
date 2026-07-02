@@ -12,6 +12,7 @@ import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import { Hero } from "../components/Hero";
 import { StorySpread } from "../components/StorySpread";
 import { PhotoLightbox } from "../components/PhotoLightbox";
+import { PotentialImprovements } from "../components/PotentialImprovements";
 import { galleryFor } from "../galleries";
 
 const ALT = "A new location!";
@@ -63,6 +64,8 @@ export function ANewLocation() {
             Free to stand alone and scorch whatever it wants.
           </p>
         </StorySpread>
+
+        <PotentialImprovements />
       </article>
 
       <SiteFooter />

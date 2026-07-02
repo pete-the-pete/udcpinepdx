@@ -12,6 +12,7 @@ import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import { Hero } from "../components/Hero";
 import { StorySpread } from "../components/StorySpread";
 import { PhotoLightbox } from "../components/PhotoLightbox";
+import { PotentialImprovements } from "../components/PotentialImprovements";
 import { galleryFor } from "../galleries";
 
 const ALT = "Scallop face!";
@@ -42,6 +43,9 @@ export function ScallopFace() {
         <p>
         Not much documentation this time. Minor improvement was to remove the eyebrows.
         </p>
+
+        <PotentialImprovements />
+
         <div class="gallery gallery--contact">
           {contact.map((i) => (
             <button class="gallery__thumb" key={i} onClick={() => setLb(i)}>

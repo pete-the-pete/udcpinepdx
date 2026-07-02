@@ -12,6 +12,7 @@ import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import { Hero } from "../components/Hero";
 import { StorySpread } from "../components/StorySpread";
 import { PhotoLightbox } from "../components/PhotoLightbox";
+import { PotentialImprovements } from "../components/PotentialImprovements";
 import { galleryFor } from "../galleries";
 
 const ALT = "Mr. Grumpy's Fire Mouth";
@@ -113,10 +114,9 @@ export function MrGrumpy() {
           amount of time, without me fussing with the fire the whole time.
         </p>
 
-        <h2>Potential Improvements</h2>
-        <p>
-          Things went so much better this time...i'm not sure what to think.
-        </p>
+        <PotentialImprovements>
+          <p>Things went so much better this time...i'm not sure what to think.</p>
+        </PotentialImprovements>
 
         <h3 class="contact-head">More from the firing</h3>
         <div class="gallery gallery--contact">

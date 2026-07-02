@@ -602,6 +602,12 @@ figure.bleed > * {
   display: block;
 }
 
+/* ---- recurring "potential improvements" section ---- */
+.improvements__todo {
+  color: var(--stone);
+  font-style: italic;
+}
+
 /* ---- lead hero image ---- */
 .hero-figure {
   margin: 28px 0 8px;
