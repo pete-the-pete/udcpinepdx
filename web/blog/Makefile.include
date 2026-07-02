@@ -1,0 +1,24 @@
+WEB_BLOG_DIR := web/blog
+WEB_BACKEND_DIR := web/backend
+
+.PHONY: web-blog-dev web-blog-build web-blog-lint web-blog-data web-blog-galleries
+
+web-blog-dev:
+	cd $(WEB_BLOG_DIR) && bun run dev
+
+web-blog-build:
+	cd $(WEB_BLOG_DIR) && bun run build
+
+web-blog-lint:
+	cd $(WEB_BLOG_DIR) && bun run lint
+
+# Regenerate the committed firing data from the backend SQLite. Pass FIRING=<id>
+# to export a different firing (default 1).
+FIRING ?= 1
+web-blog-data:
+	cd $(WEB_BACKEND_DIR) && uv run python scripts/export_firing.py --firing $(FIRING)
+
+# Re-optimize raw photo dumps in web/blog/assets/<entry>/ into committed,
+# web-ready JPEGs under web/blog/src/galleries/ (macOS sips).
+web-blog-galleries:
+	bash $(WEB_BLOG_DIR)/scripts/build-galleries.sh

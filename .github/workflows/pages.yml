@@ -1,0 +1,61 @@
+name: Deploy blog to Pages
+
+# Builds web/blog and publishes it to GitHub Pages. Runs on changes to the blog,
+# the Chuck source it reuses, or the shared types. One-time setup: in repo
+# Settings → Pages, set Source = "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/blog/**"
+      - "web/frontend/src/chef/**"
+      - "web/frontend/src/temp.ts"
+      - "shared/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One in-flight deploy at a time; let a newer push cancel an older queued run.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install workspace deps
+        run: bun install --frozen-lockfile
+
+      - name: Build blog
+        run: bun run --cwd web/blog build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/blog/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,10 @@
+{
+  "title": "The night the oven finally got hot",
+  "dek": "Three hours, one fire, seven pizzas — and a temperature trace that tells the whole story.",
+  "note_seqs": [5, 11],
+  "fault_caption": "A one-sample sensor glitch: an open thermocouple pins the MAX6675 at the top of its range (1,874°F). Not a real hearth temperature — just the wire briefly losing contact.",
+  "pizza_blurbs": {
+    "1": "The opener — snap peas, prosciutto, arugula. Named after the chef himself.",
+    "12": "The crowd favorite: pesto, parm, olives, onion, artichoke hearts, salami, arugula after the bake."
+  }
+}
