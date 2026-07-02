@@ -8,7 +8,7 @@ export function Home() {
       <SiteHeader />
 
       <section class="home-hero">
-        <div class="eyebrow">A wood-fired pizza diary</div>
+        <div class="eyebrow">A story of attempted wood-fired pizzas</div>
         <h1>udcpinepdx</h1>
         <p class="home-lede">
          cooking pizza in the upper deck of a chiminea in northeast Portland <em>barely</em> works — but it's fun to try™. 

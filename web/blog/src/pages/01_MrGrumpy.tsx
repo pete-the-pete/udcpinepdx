@@ -113,6 +113,11 @@ export function MrGrumpy() {
           amount of time, without me fussing with the fire the whole time.
         </p>
 
+        <h2>Potential Improvements</h2>
+        <p>
+          Things went so much better this time...i'm not sure what to think.
+        </p>
+
         <h3 class="contact-head">More from the firing</h3>
         <div class="gallery gallery--contact">
           {contact.map((i) => (
