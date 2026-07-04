@@ -4,7 +4,7 @@
  * folder under web/blog/assets/<slug>/ + `make web-blog-galleries`).
  */
 import type { ComponentType } from "preact";
-import { FiringOne } from "../pages/04_ANewDoor";
+import { ANewDoor } from "../pages/04_ANewDoor";
 import { MrGrumpy } from "../pages/01_MrGrumpy";
 import { ScallopFace } from "../pages/02_ScallopFace";
 import { ANewLocation } from "../pages/03_ANewLocation";
@@ -20,11 +20,11 @@ export interface Post {
 
 export const posts: Post[] = [
   {
-    slug: "firing-1",
+    slug: "a-new-door",
     title: "A new door!",
     date: "2026-06-21",
     dek: "Three hours, one fire, seven pizzas — and a temperature trace that tells the whole story.",
-    Component: FiringOne,
+    Component: ANewDoor,
   },
   {
     slug: "a-new-location",
