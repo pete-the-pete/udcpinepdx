@@ -44,7 +44,7 @@ export function ScallopFace() {
         Not much documentation this time. Minor improvement was to remove the eyebrows.
         </p>
 
-        <PotentialImprovements />
+        <PotentialImprovements>¯\_(ツ)_/¯</PotentialImprovements>
 
         <div class="gallery gallery--contact">
           {contact.map((i) => (

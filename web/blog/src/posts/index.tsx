@@ -4,7 +4,7 @@
  * folder under web/blog/assets/<slug>/ + `make web-blog-galleries`).
  */
 import type { ComponentType } from "preact";
-import { FiringOne } from "../pages/04_FiringOne";
+import { FiringOne } from "../pages/04_ANewDoor";
 import { MrGrumpy } from "../pages/01_MrGrumpy";
 import { ScallopFace } from "../pages/02_ScallopFace";
 import { ANewLocation } from "../pages/03_ANewLocation";

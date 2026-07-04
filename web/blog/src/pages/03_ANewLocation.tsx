@@ -65,7 +65,7 @@ export function ANewLocation() {
           </p>
         </StorySpread>
 
-        <PotentialImprovements />
+        <PotentialImprovements>¯\_(ツ)_/¯ ¯\_(ツ)_/¯</PotentialImprovements>
       </article>
 
       <SiteFooter />
