@@ -67,3 +67,7 @@ logs/
 
 # ---- design/ tooling venv ----
 design/.venv/
+
+# ---- Blog gallery raw source dumps (originals incl. HEIC; web-ready, optimized
+#      copies are committed under web/blog/src/galleries/ via make web-blog-galleries) ----
+web/blog/assets/

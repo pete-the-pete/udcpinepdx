@@ -3,6 +3,7 @@
 include shared/Makefile.include
 include web/backend/Makefile.include
 include web/frontend/Makefile.include
+include web/blog/Makefile.include
 include firmware/Makefile.include
 
 .PHONY: help build codegen test lint dev serve e2e db-reset
@@ -36,7 +37,7 @@ codegen: shared-codegen
 
 test: shared-test web-backend-test
 
-lint: shared-lint web-backend-lint web-frontend-lint
+lint: shared-lint web-backend-lint web-frontend-lint web-blog-lint
 
 dev:
 	@echo "Starting Flask (:5001) and Vite (:5173)…"
