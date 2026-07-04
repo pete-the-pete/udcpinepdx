@@ -102,8 +102,7 @@ export function MrGrumpy() {
             roasted cherry tomato sauce
           </a>
           . Frozen, the tomatoes taste just as good as fresh — they only get mushy, which is fine for
-          sauce. I forgot to photograph the dough, or honestly the finished pie, so every photo here
-          is the oven that cooked it.
+          sauce. I was too focused on the cooking process, so I only have photos of that.
         </p>
 
         <h2>The learnings</h2>
