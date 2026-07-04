@@ -2,9 +2,10 @@ import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
 import { fileURLToPath } from "node:url";
 
-// Static blog deployed to GitHub Pages at /<repo>/. The base must match the
-// project path so hashed asset URLs resolve.
-const BASE = "/udcpinepdx/";
+// Served at the root of the custom domain (upperdeckchimineapizzainnortheastportland.com)
+// via GitHub Pages, so the base is "/". (For a project site without a custom
+// domain it would need to be "/<repo>/".)
+const BASE = "/";
 
 export default defineConfig({
   base: BASE,
