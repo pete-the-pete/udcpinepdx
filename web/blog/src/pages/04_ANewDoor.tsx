@@ -66,23 +66,22 @@ export function ANewDoor() {
 
         <h2>Chuck</h2>
         <p>
-          A raspberry pi, dedicated screen, and a thermocouple gave temperature samples inside the chiminea at at 1Hz. 
-          The a session starts when we light the fire, chuck gets up to temperature and then we track pizzas.
-          A phone is connected via qr-code and sso for easier interaction.
+          Chuck is the cartoon chef that indicates the temperature of the oven, and reminds us to have fun.
+          He as has five moods, mapped to the oven air temperature to easily indicate the temperature.<br/>
+          A raspberry pi is (the computer), dedicated screen, and a thermocouple gave temperature samples inside the chiminea every second. 
+          A session starts when we light the fire, chuck gets up to temperature and then we track pizzas.
+          A phone is used to start and stop the pizza recordings.
           Drag across the curve to re-live the firing — Chuck reacts to the reading and shows different states depending on the temp.
         </p>
 
         <figure>
           <ChuckDemo />
-          <figcaption>
-            Chuck has five moods, mapped to the oven air temperature with a 4° dead-band so he never
-            flickers. Drag him from frozen all the way to transcendence.
-          </figcaption>
+          <caption>Drag him from frozen all the way to transcendence</caption>
         </figure>
 
         <figure class="bleed">
           <div class="chart-toolbar">
-            <span class="chart-toolbar__hint">Scrub the curve · hover for detail</span>
+            <span class="chart-toolbar__hint">hover for detail</span>
             <ModeToggle mode={mode} onChange={setMode} />
           </div>
           <FiringChart firing={f} mode={mode} />
@@ -99,13 +98,12 @@ export function ANewDoor() {
         </p>
         <PizzaResults firing={f} curation={firing1Curation} mode={mode} />
 
-        <h2>The learnings</h2>
+        <h2>Lessons learned</h2>
         <p>
-          With the door in place, the chiminea was actually hot, which meant previous solutions were no longer valid and adjustments needed to be made.
           <ul>
-            <li>protecting the device - the rapsberry pi got over heated in the sun and shutdown, it also got overheated from the bottom...and shutdown. We solved the first issue with an umbrella attached to a ladder, and the second issue with a small piece of wood below the device.</li>
-            <li>lowering the pizza - bricks had been in place to lift the pizza higher to get more heat on top, and distance between the flames. Now the pizza was cooking too fast for the crust to get properly done, so they had to be removed</li>
-            <li>burn larger logs - kindling is used to get the chiminea up to temperature "slowly" so the terracota doesn't crack. Once hot, we can use larger pieces of wood which burn longer and produce a more event heat. Now that its possible to actually know the temperature we can make the transition sooner and reduce temperature swings and finger burns</li>
+            <li><b>protecting the device</b> - the raspberry pi got over heated in the sun and shutdown, it also got overheated from the bottom...and shutdown. We solved the first issue with an umbrella attached to a ladder, and the second issue with a small piece of wood below the device.</li>
+            <li><b>lowering the pizza</b> - bricks had been in place to lift the pizza higher to get more heat on top, and distance between the flames. Now the pizza was cooking too fast for the crust to get properly done, so they had to be removed</li>
+            <li><b>burn larger logs</b> - kindling is used to get the chiminea up to temperature "slowly" so the terracota doesn't crack. Once hot, we can use larger pieces of wood which burn longer and produce a more event heat. Now that its possible to actually know the temperature we can make the transition sooner and reduce temperature swings and finger burns</li>
           </ul>
         </p>
 
