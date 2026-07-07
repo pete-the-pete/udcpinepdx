@@ -44,7 +44,7 @@ jobs:
         run: bun run --cwd web/blog build
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: web/blog/dist
 
