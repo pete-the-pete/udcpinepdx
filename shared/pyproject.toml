@@ -9,7 +9,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "datamodel-code-generator>=0.25.0",
+  "datamodel-code-generator>=0.64.0",
   "pytest>=8.0",
   "ruff>=0.4",
 ]
